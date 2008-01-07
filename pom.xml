@@ -14,5 +14,30 @@
 	
 	<modules>
 		<module>crayon-core</module>
+		<module>crayon-module-services</module>
 	</modules>
+	
+	<dependencies>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>1.4.3</version>
+			<scope>test</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<version>5.1</version>
+			<classifier>jdk15</classifier>
+			<scope>test</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.easymock</groupId>
+			<artifactId>easymock</artifactId>
+			<version>2.3</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 </project>

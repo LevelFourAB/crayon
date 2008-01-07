@@ -124,18 +124,9 @@ public class EntryPoint
 			ClassLocator.getClassModules(EntryPoint.class.getClassLoader(),
 					Module.class, manifestKey);
 		
-		List<Module> moduleInstances = 
-			entryPointModule.getListForManifestKey(manifestKey);
-		
 		for(Class<Module> m : modules)
 		{
 			modules.add(m);
-			
-			// FIXME
-//			Module instance = configurationInjector.getInstance(m);
-//			
-//			moduleInstances.add(instance);
-//			add(instance);
 		}
 		
 		return this;
@@ -186,10 +177,13 @@ public class EntryPoint
 		performContributions();
 		
 		// retrieve ServiceManager and start all managed services
-		ServiceManager manager = injector.getInstance(ServiceManager.class);
-		manager.startAll();
+//		ServiceManager manager = injector.getInstance(ServiceManager.class);
+//		manager.startAll();
 	}
 	
+	/**
+	 * Initialize all modules by running their module descriptors in order.
+	 */
 	private void initModuleDescriptors()
 	{
 		MethodResolver resolver = new MethodResolver(ModuleDescription.class,
