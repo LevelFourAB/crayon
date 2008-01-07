@@ -3,20 +3,28 @@ package se.l4.crayon;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
-import java.util.LinkedList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Binder;
 import com.google.inject.Binding;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
 
+import se.l4.crayon.annotation.Contribution;
+import se.l4.crayon.annotation.ModuleDescription;
 import se.l4.crayon.internal.ClassLocator;
 import se.l4.crayon.internal.EntryPointModule;
+import se.l4.crayon.internal.methods.MethodDef;
+import se.l4.crayon.internal.methods.MethodResolver;
+import se.l4.crayon.internal.methods.MethodResolverCallback;
 
 /**
  * Entry point for system, used for defining which modules should be used and
@@ -69,7 +77,9 @@ public class EntryPoint
 	public static final String MANIFEST_KEY = "System-Modules";
 	
 	private Injector configurationInjector;
-	private List<Module> modules;
+	
+	private Map<Class<?>, Object> moduleInstances;
+	private Set<Class<?>> modules;
 	
 	private Injector injector;
 	
@@ -78,12 +88,14 @@ public class EntryPoint
 	public EntryPoint()
 	{
 		configurationInjector = Guice.createInjector();
-		
-		modules = new LinkedList<Module>();
+	
+		modules = new HashSet<Class<?>>();
+		moduleInstances = new HashMap<Class<?>, Object>();
 		
 		// add default module
+		modules.add(EntryPointModule.class);
 		entryPointModule = new EntryPointModule(this);
-		modules.add(entryPointModule);
+		addInstance(entryPointModule);
 	}
 	
 	/**
@@ -117,10 +129,13 @@ public class EntryPoint
 		
 		for(Class<Module> m : modules)
 		{
-			Module instance = configurationInjector.getInstance(m);
+			modules.add(m);
 			
-			this.modules.add(instance);
-			moduleInstances.add(instance);
+			// FIXME
+//			Module instance = configurationInjector.getInstance(m);
+//			
+//			moduleInstances.add(instance);
+//			add(instance);
 		}
 		
 		return this;
@@ -133,12 +148,28 @@ public class EntryPoint
 	 * @param type
 	 * @return
 	 */
-	public EntryPoint add(Class<? extends Module> type)
+	public EntryPoint add(Class<?> type)
 	{
-		Module instance = configurationInjector.getInstance(type);
-		modules.add(instance);
+		modules.add(type);
 		
 		return this;
+	}
+	
+	private void addInstance(Object instance)
+	{
+		moduleInstances.put(instance.getClass(), instance);
+	}
+	
+	private Object getInstance(Class<?> type)
+	{
+		Object o = moduleInstances.get(type);
+		if(o == null)
+		{
+			o = configurationInjector.getInstance(type);
+			moduleInstances.put(type, o);
+		}
+		
+		return o;
 	}
 	
 	/**
@@ -146,20 +177,165 @@ public class EntryPoint
 	 */
 	public void start()
 	{
-		injector = Guice.createInjector(modules);
+		initModuleDescriptors();
 		
 		// configure logging (if possible)
 		configureLogging();
 		
 		// go through each and check if any configuration should be done
-		for(Module m : modules)
-		{
-			configure(m);
-		}
+		performContributions();
 		
 		// retrieve ServiceManager and start all managed services
 		ServiceManager manager = injector.getInstance(ServiceManager.class);
 		manager.startAll();
+	}
+	
+	private void initModuleDescriptors()
+	{
+		MethodResolver resolver = new MethodResolver(ModuleDescription.class,
+			new MethodResolverCallback()
+			{
+				public Object getInstance(Class<?> c)
+				{
+					return EntryPoint.this.getInstance(c);
+				}
+
+				public String getName(MethodDef def)
+				{
+					String s = 
+						def.getMethod()
+							.getAnnotation(ModuleDescription.class)
+							.name();
+					
+					return "".equals(s) 
+						? def.getObject().getClass() + "-" + def.getMethod().getName()
+						: s;
+				}
+			
+			}
+		);
+		
+		for(Class<?> c : modules)
+		{
+			resolver.add(c);
+		}
+		
+		final Set<MethodDef> defs = resolver.getOrder();
+		resolver = null;
+		
+		injector = Guice.createInjector(new Module()
+		{
+			public void configure(Binder binder)
+			{
+				Object[] params = new Object[] { binder };
+				
+				for(MethodDef def : defs)
+				{
+					Method method = def.getMethod();
+					Object object = def.getObject();
+					
+					try
+					{
+						method.invoke(object, params);
+					}
+					catch(IllegalArgumentException e)
+					{
+						throw new ConfigurationException(
+							"Module description methods should take a single" 
+							+ " argument of type Binder; " + e.getMessage(), e);
+					}
+					catch(IllegalAccessException e)
+					{
+						throw new ConfigurationException(e.getMessage(), e);
+					}
+					catch(InvocationTargetException e)
+					{
+						Throwable cause = e.getCause();
+						
+						throw new ConfigurationException(cause.getMessage(), cause);
+					}
+				}
+			}
+		});
+	}
+	
+	/**
+	 * Run all contributions on all modules.
+	 */
+	private void performContributions()
+	{
+		MethodResolver resolver = new MethodResolver(Contribution.class,
+			new MethodResolverCallback()
+			{
+				public Object getInstance(Class<?> c)
+				{
+					return EntryPoint.this.getInstance(c);
+				}
+
+				public String getName(MethodDef def)
+				{
+					String s = 
+						def.getMethod()
+							.getAnnotation(Contribution.class)
+							.name();
+					
+					return "".equals(s) 
+						? def.getObject().getClass() + "-" + def.getMethod().getName()
+						: s;
+				}
+			
+			}
+		);
+		
+		for(Class<?> c : modules)
+		{
+			resolver.add(c);
+		}
+		
+		final Set<MethodDef> defs = resolver.getOrder();
+		resolver = null;
+		
+		// run all contributions in order
+		for(MethodDef def : defs)
+		{
+			Method method = def.getMethod();
+			Object object = def.getObject();
+			
+			Type[] var = method.getGenericParameterTypes();
+				
+			Annotation[][] annotations = method.getParameterAnnotations();
+				
+			Object[] params = new Object[var.length];
+				
+			for(int i=0, n=var.length; i<n; i++)
+			{
+				// Use the correct method
+				Key<?> key = annotations[i].length == 0
+					? Key.get(var[i])
+					: Key.get(var[i], annotations[i][0]);
+					
+				params[i] = injector.getInstance(key);
+			}
+				
+			try
+			{
+				method.invoke(object, params);
+			}
+			catch(IllegalArgumentException e)
+			{
+				throw new ConfigurationException(e.getMessage(), e);
+			}
+			catch(IllegalAccessException e)
+			{
+				throw new ConfigurationException(e.getMessage(), e);
+			}
+			catch(InvocationTargetException e)
+			{
+				Throwable cause = e.getCause();
+				
+				throw new ConfigurationException(cause.getMessage(), cause);
+			}
+		}
 	}
 	
 	private void configureLogging()
@@ -186,61 +362,4 @@ public class EntryPoint
 		return injector;
 	}
 	
-	/**
-	 * Run all methods named {@code configure} on the given object. Will
-	 * exclude methods without parameters and the method defined by
-	 * {@link Module}.
-	 * 
-	 * @param object
-	 * 		object to run configure methods on
-	 */
-	private void configure(Object object)
-	{
-		for(Method method : object.getClass().getMethods())
-		{
-			if(method.isAnnotationPresent(Contribution.class))
-			{
-				if(false == Modifier.isPublic(method.getModifiers()))
-				{
-					throw new ConfigurationException("Method is not public " 
-							+ method + " (" + object.getClass() + ")");
-				}
-				
-				Type[] var = method.getGenericParameterTypes();
-				
-				Annotation[][] annotations = method.getParameterAnnotations();
-				
-				Object[] params = new Object[var.length];
-				
-				for(int i=0, n=var.length; i<n; i++)
-				{
-					// Use the correct method
-					Key<?> key = annotations[i].length == 0
-						? Key.get(var[i])
-						: Key.get(var[i], annotations[i][0]);
-					
-					params[i] = injector.getInstance(key);
-				}
-				
-				try
-				{
-					method.invoke(object, params);
-				}
-				catch(IllegalArgumentException e)
-				{
-					throw new ConfigurationException(e.getMessage(), e);
-				}
-				catch(IllegalAccessException e)
-				{
-					throw new ConfigurationException(e.getMessage(), e);
-				}
-				catch(InvocationTargetException e)
-				{
-					Throwable cause = e.getCause();
-					
-					throw new ConfigurationException(cause.getMessage(), cause);
-				}
-			}
-		}
-	}
 }

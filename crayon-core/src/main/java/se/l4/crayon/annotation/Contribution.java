@@ -1,10 +1,12 @@
-package se.l4.crayon;
+package se.l4.crayon.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import se.l4.crayon.EntryPoint;
 
 /**
  * Annotation used for marking a method that it should be run as part of the
@@ -19,5 +21,5 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Contribution
 {
-
+	String name() default "";
 }

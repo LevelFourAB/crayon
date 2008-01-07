@@ -6,20 +6,60 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import se.l4.crayon.ConfigurationException;
+
 /**
  * Dependency resolver, takes a set of defined dependencies and decides in
  * which order they should be used.
  * 
+ * <pre>
+ * DependencyResolver&lt;String&gt; resolver = 
+ * 		new DependencyResolver&lt;String&gt;();
+ * 
+ * resolver.addDependency(A, B);
+ * resolver.addDependency(B, C);
+ * 
+ * resolver.getOrder(); // retrieve ordered set
+ * </pre>
+ * 
  * @author Andreas Holstenson
  *
  */
-public class DependencyResolver
+public class DependencyResolver<T>
 {
-	private Map<Object, Node> nodes;
+	private Map<T, Node> nodes;
 	
 	public DependencyResolver()
 	{
-		nodes = new HashMap<Object, Node>();
+		nodes = new HashMap<T, Node>();
+	}
+	
+	/**
+	 * Add a dependency from an object to another object.
+	 * 
+	 * @param from
+	 * 		object to add from
+	 * @param on
+	 * 		the object that {@code from} depends on
+	 */
+	public void addDependency(T from, T on)
+	{
+		Node fromDep = getNode(from);
+		Node toDep = getNode(on);
+		
+		if(toDep.to.contains(fromDep))
+		{
+			throw new ConfigurationException("Cyclic dependency between "
+				+ from + " and " + on);
+		}
+		
+		fromDep.to.add(toDep);
+		toDep.from.add(fromDep);
+	}
+	
+	public void add(T object)
+	{
+		getNode(object);
 	}
 	
 	/**
@@ -30,14 +70,9 @@ public class DependencyResolver
 	 * @return
 	 * 		ordered set with dependencies
 	 */
-	public Set<Object> getDependencyOrder(Set<DependencyData> topLevelDeps)
+	public Set<T> getOrder()
 	{
-		for(DependencyData dep : topLevelDeps)
-		{
-			buildGraph(dep);
-		}
-		
-		Set<Object> result = new LinkedHashSet<Object>();
+		Set<T> result = new LinkedHashSet<T>();
 		
 		for(Node n : nodes.values())
 		{
@@ -50,7 +85,8 @@ public class DependencyResolver
 		return result;
 	}
 	
-	private void add(Node node, Set<Object> result)
+	/** Add node to final result. */
+	private void add(Node node, Set<T> result)
 	{
 		if(result.contains(node.type))
 		{
@@ -69,26 +105,12 @@ public class DependencyResolver
 			add(n, result);
 		}
 	}
-	
-	private void buildGraph(DependencyData in)
+
+	/** Retrieve node for object. */
+	private Node getNode(T m)
 	{
-		Node node = getNode(in);
-		
-		for(DependencyData d : in.getDependencies())
-		{
-			Node toDep = getNode(d);
-			
-			node.to.add(toDep);
-			toDep.from.add(node);
-			
-			buildGraph(d);
-		}
-	}
-	
-	private Node getNode(DependencyData in)
-	{
-		Object m = in.getModule();
 		Node node = nodes.get(m);
+		
 		if(node == null)
 		{
 			node = new Node(m);
@@ -98,13 +120,13 @@ public class DependencyResolver
 		return node;
 	}
 	
-	private static class Node
+	private class Node
 	{
 		Set<Node> to;
 		Set<Node> from;
-		Object type;
+		T type;
 		
-		public Node(Object type)
+		public Node(T type)
 		{
 			this.type = type;
 			
@@ -112,31 +134,5 @@ public class DependencyResolver
 			from = new HashSet<Node>();
 		}
 	}
-	
-	public static void main(String[] args)
-	{
-		String A = "A";
-		String B = "B";
-		String C = "C";
-		String D = "D";
-		
-		DependencyResolver resolver = new DependencyResolver();
-		
-		
-		DependencyData dA = new DependencyData(A);
-		DependencyData dB = new DependencyData(B);
-		DependencyData dC = new DependencyData(C);
-		DependencyData dD = new DependencyData(D);
-		
-		dA.addDependency(dB);
-		dC.addDependency(dD);
-		dB.addDependency(dD);
-		dC.addDependency(dA);
-		
-		Set<DependencyData> data = new HashSet<DependencyData>();
-		data.add(dA);
-		data.add(dC);
-		
-		resolver.getDependencyOrder(data);
-	}
+
 }

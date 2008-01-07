@@ -1,0 +1,145 @@
+package se.l4.crayon.internal.methods;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import se.l4.crayon.ConfigurationException;
+import se.l4.crayon.internal.DependencyResolver;
+
+public class MethodResolver
+{
+	private HashSet<Class<?>> classes;
+	
+	private Map<String, MethodDef> methods;
+	private Map<Class<?>, List<MethodDef>> defs;
+	
+	private Class<? extends Annotation> annotation;
+	private MethodResolverCallback callback;
+	
+	public MethodResolver(Class<? extends Annotation> annotation,
+		MethodResolverCallback callback)
+	{
+		this.annotation = annotation;
+		this.callback = callback;
+		
+		methods = new HashMap<String, MethodDef>();
+		defs = new HashMap<Class<?>, List<MethodDef>>();
+		
+		classes = new HashSet<Class<?>>();
+	}
+	
+	public void add(Class<?> type)
+	{
+		// Do nothing if the class is already added
+		if(false == classes.add(type))
+		{
+			return;
+		}
+		
+		// Otherwise create an instance and loop through methods
+		Object object = callback.getInstance(type);
+		
+		Method[] declared = type.getMethods();
+		List<MethodDef> defs = getMethodDefs(type);
+		
+		for(Method m : declared)
+		{
+			if(false == m.isAnnotationPresent(annotation))
+			{
+				continue;
+			}
+			
+			MethodDef def = new MethodDef(object, m);
+			String name = callback.getName(def);
+
+			// Store the definition
+			methods.put(name, def);
+			defs.add(def);
+			
+			// Also add dependencies
+			Class<?>[] deps = def.getDependencies();
+			for(Class<?> dep : deps)
+			{
+				add(dep);
+			}
+		}
+	}
+	
+	private List<MethodDef> getMethodDefs(Class<?> c)
+	{
+		List<MethodDef> result = defs.get(c);
+
+		if(result == null)
+		{
+			result = new LinkedList<MethodDef>();
+			defs.put(c, result);
+		}
+		
+		return result;
+	}
+	
+	public Set<MethodDef> getOrder()
+	{
+		DependencyResolver<MethodDef> resolver =
+			new DependencyResolver<MethodDef>();
+		
+		for(MethodDef def : methods.values())
+		{
+			// Always add without any dependencies
+			resolver.add(def);
+			
+			// Take care of class dependencies
+			Class<?>[] deps = def.getDependencies();
+			
+			for(Class<?> dep : deps)
+			{
+				List<MethodDef> depDefs = defs.get(dep);
+				for(MethodDef d : depDefs)
+				{
+					resolver.addDependency(def, d);
+				}
+			}
+			
+			// Take care of order dependencies
+			String[] order = def.getOrder();
+			for(String s : order)
+			{
+				if(s.startsWith("before:"))
+				{
+					s = s.substring(7);
+					
+					MethodDef d = methods.get(s);
+					if(d != null)
+					{
+						resolver.addDependency(d, def);
+					}
+				}
+				else if(s.startsWith("after:"))
+				{
+					s = s.substring(6);
+					
+					MethodDef d = methods.get(s);
+					if(d != null)
+					{
+						resolver.addDependency(def, d);
+					}
+				}
+				else
+				{
+					throw new ConfigurationException("Invalid order `" + s 
+						+ "` in " + def.getMethod().getName() + " (" 
+						+ def.getMethod().getDeclaringClass() + ")");
+				}
+			}
+		}
+		
+		return resolver.getOrder();
+	}
+	
+}

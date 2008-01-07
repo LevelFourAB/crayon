@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.google.inject.AbstractModule;
+import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
@@ -15,6 +15,7 @@ import se.l4.crayon.EntryPoint;
 import se.l4.crayon.ErrorHandler;
 import se.l4.crayon.ErrorManager;
 import se.l4.crayon.ServiceManager;
+import se.l4.crayon.annotation.ModuleDescription;
 
 /**
  * Module that is always loaded, containing the base configuration and bindings
@@ -25,7 +26,6 @@ import se.l4.crayon.ServiceManager;
  *
  */
 public class EntryPointModule
-	extends AbstractModule
 {
 	private EntryPoint entryPoint;
 	private Map<String, List<Module>> discoveredModules;
@@ -50,18 +50,18 @@ public class EntryPointModule
 		return modules;
 	}
 	
-	@Override
-	protected void configure()
+	@ModuleDescription
+	public void configure(Binder binder)
 	{
 		// Reference to entry point
-		bind(EntryPoint.class).toInstance(entryPoint);
+		binder.bind(EntryPoint.class).toInstance(entryPoint);
 		
 		// Services
-		bind(ServiceManager.class).to(ServiceManagerImpl.class);
+		binder.bind(ServiceManager.class).to(ServiceManagerImpl.class);
 		
 		// Error handling
-		bind(ErrorManager.class).to(ErrorManagerImpl.class);
-		bind(ErrorHandler.class).to(ErrorHandlerImpl.class);
+		binder.bind(ErrorManager.class).to(ErrorManagerImpl.class);
+		binder.bind(ErrorHandler.class).to(ErrorHandlerImpl.class);
 		
 		// bind discovered modules tied to manifest keys
 		for(Map.Entry<String, List<Module>> entry : discoveredModules.entrySet())
@@ -69,7 +69,7 @@ public class EntryPointModule
 			String key = entry.getKey();
 			List<Module> value = Collections.unmodifiableList(entry.getValue());
 			
-			bind(new TypeLiteral<List<Module>>(){})
+			binder.bind(new TypeLiteral<List<Module>>(){})
 				.annotatedWith(Names.named(key))
 				.toInstance(value);
 		}
