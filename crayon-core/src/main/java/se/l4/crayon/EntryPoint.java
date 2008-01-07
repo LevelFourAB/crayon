@@ -146,9 +146,13 @@ public class EntryPoint
 		return this;
 	}
 	
-	private void addInstance(Object instance)
+	public EntryPoint addInstance(Object instance)
 	{
 		moduleInstances.put(instance.getClass(), instance);
+		
+		modules.add(instance.getClass());
+		
+		return this;
 	}
 	
 	private Object getInstance(Class<?> type)
