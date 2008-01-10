@@ -34,12 +34,23 @@ import se.l4.crayon.types.standard.VoidStringConversion;
  */
 public class TypeConverterModule
 {
+	/**
+	 * Bind the default type converter.
+	 * 
+	 * @param binder
+	 */
 	@ModuleDescription
 	public void bindTypeConverter(Binder binder)
 	{
 		binder.bind(TypeConverter.class).to(TypeConverterImpl.class);
 	}
 	
+	/**
+	 * Register the default converters with {@link TypeConverter}. This
+	 * includes conversion to/from strings and between numbers.
+	 * 
+	 * @param converter
+	 */
 	@Contribution
 	public void contributeDefaultConversions(TypeConverter converter)
 	{

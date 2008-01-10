@@ -8,7 +8,27 @@ package se.l4.crayon.types;
  */
 public interface TypeConverter
 {
+	/**
+	 * Convert the given input to another type.
+	 * 
+	 * @param <T>
+	 * 		type of output
+	 * @param in
+	 * 		value to convert (input)
+	 * @param output
+	 * 		output type
+	 * @return
+	 * 		converted value
+	 * @throws ConversionException
+	 * 		if unable to convert
+	 */
 	<T> T convert(Object in, Class<T> output);
 
+	/**
+	 * Add a conversion between two types.
+	 * 
+	 * @param conversion
+	 * 		conversion
+	 */
 	void add(Conversion<?, ?> conversion);
 }
