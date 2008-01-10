@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -80,6 +81,8 @@ public class EntryPoint
 	
 	private Map<Class<?>, Object> moduleInstances;
 	private Set<Class<?>> modules;
+
+	private List<Module> guiceModules;
 	
 	private Injector injector;
 	
@@ -91,6 +94,7 @@ public class EntryPoint
 	
 		modules = new HashSet<Class<?>>();
 		moduleInstances = new HashMap<Class<?>, Object>();
+		guiceModules = new LinkedList<Module>();
 		
 		// add default module
 		modules.add(EntryPointModule.class);
@@ -151,6 +155,22 @@ public class EntryPoint
 		moduleInstances.put(instance.getClass(), instance);
 		
 		modules.add(instance.getClass());
+		
+		return this;
+	}
+	
+	public EntryPoint addGuiceModule(Module module)
+	{
+		guiceModules.add(module);
+		
+		return this;
+	}
+	
+	public EntryPoint addGuiceModule(Class<? extends Module> type)
+	{
+		guiceModules.add(
+			configurationInjector.getInstance(type)
+		);
 		
 		return this;
 	}
@@ -221,7 +241,8 @@ public class EntryPoint
 		final Set<MethodDef> defs = resolver.getOrder();
 		resolver = null;
 		
-		injector = Guice.createInjector(new Module()
+		// Use the list of basic Guice modules and add the custom module
+		guiceModules.add(new Module()
 		{
 			public void configure(Binder binder)
 			{
@@ -255,6 +276,7 @@ public class EntryPoint
 				}
 			}
 		});
+		injector = Guice.createInjector(guiceModules);
 	}
 	
 	/**
