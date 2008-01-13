@@ -111,8 +111,8 @@ public class TypeConverterImpl
 		{
 			List<Conversion<?, ?>> list = getListFor(c);
 			
-			queue.addAll((Collection<? extends Conversion<I, O>>) list);
-			tested.addAll((Collection<? extends Conversion<I, O>>) list);
+			queue.addAll((Collection) list);
+			tested.addAll((Collection) list);
 		}
 		
 		while(false == queue.isEmpty())
