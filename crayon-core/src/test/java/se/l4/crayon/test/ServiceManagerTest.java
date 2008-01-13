@@ -23,6 +23,7 @@ public class ServiceManagerTest
 {
 	@Test
 	public void testAddAndStartAll()
+		throws Exception
 	{
 		// setup injector
 		Injector injector = createMock(Injector.class);

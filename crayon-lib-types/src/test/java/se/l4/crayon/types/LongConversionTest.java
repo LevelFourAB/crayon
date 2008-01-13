@@ -19,7 +19,7 @@ public class LongConversionTest
 	@Test
 	public void testLongToString()
 	{
-		TypeConverter tc = new TypeConverterImpl();
+		TypeConverter tc = new TypeConverterImpl(null);
 		tc.add(new LongStringConversion());
 		tc.add(new StringLongConversion());
 		
@@ -32,7 +32,7 @@ public class LongConversionTest
 	@Test
 	public void testLongToDouble()
 	{
-		TypeConverter tc = new TypeConverterImpl();
+		TypeConverter tc = new TypeConverterImpl(null);
 		tc.add(new LongDoubleConversion());
 		tc.add(new DoubleLongConversion());
 		
@@ -46,7 +46,7 @@ public class LongConversionTest
 	@Test
 	public void testLongToInteger()
 	{
-		TypeConverter tc = new TypeConverterImpl();
+		TypeConverter tc = new TypeConverterImpl(null);
 		tc.add(new LongIntegerConversion());
 		tc.add(new IntegerLongConversion());
 		
@@ -60,7 +60,7 @@ public class LongConversionTest
 	@Test
 	public void testLongToShort()
 	{
-		TypeConverter tc = new TypeConverterImpl();
+		TypeConverter tc = new TypeConverterImpl(null);
 		tc.add(new LongShortConversion());
 		tc.add(new ShortLongConversion());
 		

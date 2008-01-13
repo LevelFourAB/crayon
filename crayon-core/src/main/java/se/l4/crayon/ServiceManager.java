@@ -30,15 +30,17 @@ public interface ServiceManager
 	 * and refuse to start if it has.
 	 * 
 	 * @param service
+	 * @throws Exception 
 	 */
-	void startService(ManagedService service);
+	void startService(ManagedService service) throws Exception;
 
 	/**
 	 * Stop the given service. Stops the service if it is running.
 	 * 
 	 * @param service
+	 * @throws Exception 
 	 */
-	void stopService(ManagedService service);
+	void stopService(ManagedService service) throws Exception;
 	
 	/**
 	 * Start all services.

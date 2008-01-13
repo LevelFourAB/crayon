@@ -31,4 +31,6 @@ public interface TypeConverter
 	 * 		conversion
 	 */
 	void add(Conversion<?, ?> conversion);
+	
+	void add(Class<? extends Conversion<?, ?>> conversion);
 }

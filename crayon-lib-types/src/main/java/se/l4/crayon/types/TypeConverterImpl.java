@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.inject.Singleton;
 
 /**
@@ -42,9 +44,13 @@ public class TypeConverterImpl
 		};
 		
 	private Map<Class<?>, List<Conversion<?, ?>>> conversions;
+	private Injector injector;
 	
-	public TypeConverterImpl()
+	@Inject
+	public TypeConverterImpl(Injector injector)
 	{
+		this.injector = injector;
+		
 		conversions = new HashMap<Class<?>, List<Conversion<?,?>>>();
 	}
 	
@@ -68,6 +74,12 @@ public class TypeConverterImpl
 		List<Conversion<?, ?>> list = getListFor(conversion.getInput());
 		list.add(conversion);
 	}
+	
+	public void add(Class<? extends Conversion<?, ?>> conversion)
+	{
+		Conversion<?, ?> c = injector.getInstance(conversion);
+		add(c);
+	}
 
 	@SuppressWarnings("unchecked")
 	public <T> T convert(Object in, Class<T> output)
@@ -88,6 +100,9 @@ public class TypeConverterImpl
 	@SuppressWarnings("unchecked")
 	private <I, O> Conversion<I, O> findConversion(Class<I> in, Class<O> out)
 	{
+		in = (Class) wrap(in);
+		out = (Class) wrap(out);
+		
 		Set<Conversion<I, O>> tested = new HashSet<Conversion<I, O>>();
 		LinkedList<Conversion<I, O>> queue = new LinkedList<Conversion<I, O>>();
 		
@@ -185,4 +200,19 @@ public class TypeConverterImpl
 		return in.getSuperclass();
 	}
 	
+	private static Class<?> wrap(Class<?> in)
+	{
+		if(false == in.isPrimitive())
+		{
+			return in;
+		}
+		else if(in == boolean.class)
+		{
+			return Boolean.class;
+		}
+		else
+		{
+			throw new ConversionException("Unsupported type " + in);
+		}
+	}
 }

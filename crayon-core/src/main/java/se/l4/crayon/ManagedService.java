@@ -11,8 +11,8 @@ package se.l4.crayon;
 public interface ManagedService
 {
 	/** Start service. */
-	void start();
+	void start() throws Exception;
 	
 	/** Stop service. */
-	void stop();
+	void stop() throws Exception;
 }

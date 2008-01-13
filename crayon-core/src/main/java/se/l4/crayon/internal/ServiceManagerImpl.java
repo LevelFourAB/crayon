@@ -45,11 +45,13 @@ public class ServiceManagerImpl
 	}
 	
 	public void startService(ManagedService service)
+		throws Exception
 	{
 		service.start();
 	}
 
 	public void stopService(ManagedService service)
+		throws Exception
 	{
 		service.stop();
 	}
@@ -58,7 +60,15 @@ public class ServiceManagerImpl
 	{		
 		for(ManagedService service : services)
 		{
-			service.start();
+			try
+			{
+				service.start();
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+				// FIXME: HANDLE EXCEPTION
+			}
 		}
 	}
 
@@ -66,7 +76,15 @@ public class ServiceManagerImpl
 	{
 		for(ManagedService service : services)
 		{
-			service.stop();
+			try
+			{
+				service.stop();
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+				// FIXME: HANDLE EXCEPTION
+			}
 		}
 	}
 }

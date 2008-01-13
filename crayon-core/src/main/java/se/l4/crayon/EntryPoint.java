@@ -201,8 +201,8 @@ public class EntryPoint
 		performContributions();
 		
 		// retrieve ServiceManager and start all managed services
-//		ServiceManager manager = injector.getInstance(ServiceManager.class);
-//		manager.startAll();
+		ServiceManager manager = injector.getInstance(ServiceManager.class);
+		manager.startAll();
 	}
 	
 	/**

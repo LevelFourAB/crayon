@@ -14,7 +14,7 @@
 	
 	<modules>
 		<module>crayon-core</module>
-		<module>crayon-module-services</module>
+		<module>crayon-lib-types</module>
 	</modules>
 	
 	<dependencies>
