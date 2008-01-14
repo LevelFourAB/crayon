@@ -61,13 +61,6 @@ public class MethodResolver
 			// Store the definition
 			methods.put(name, def);
 			defs.add(def);
-			
-			// Also add dependencies
-			Class<?>[] deps = def.getDependencies();
-			for(Class<?> dep : deps)
-			{
-				add(dep);
-			}
 		}
 	}
 	
@@ -93,18 +86,6 @@ public class MethodResolver
 		{
 			// Always add without any dependencies
 			resolver.add(def);
-			
-			// Take care of class dependencies
-			Class<?>[] deps = def.getDependencies();
-			
-			for(Class<?> dep : deps)
-			{
-				List<MethodDef> depDefs = defs.get(dep);
-				for(MethodDef d : depDefs)
-				{
-					resolver.addDependency(def, d);
-				}
-			}
 			
 			// Take care of order dependencies
 			String[] order = def.getOrder();

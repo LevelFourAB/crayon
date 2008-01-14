@@ -4,7 +4,7 @@ import org.osgi.framework.BundleContext;
 
 import com.google.inject.Binder;
 
-import se.l4.crayon.annotation.ModuleDescription;
+import se.l4.crayon.annotation.Description;
 
 public class OSGiModule
 {
@@ -15,7 +15,7 @@ public class OSGiModule
 		this.context = context;
 	}
 	
-	@ModuleDescription
+	@Description
 	public void configure(Binder binder)
 	{
 		binder.bind(BundleContext.class).toInstance(context);

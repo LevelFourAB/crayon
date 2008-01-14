@@ -3,7 +3,7 @@ package se.l4.crayon.types;
 import com.google.inject.Binder;
 
 import se.l4.crayon.annotation.Contribution;
-import se.l4.crayon.annotation.ModuleDescription;
+import se.l4.crayon.annotation.Description;
 import se.l4.crayon.types.standard.BooleanLongConversion;
 import se.l4.crayon.types.standard.BooleanStringConversion;
 import se.l4.crayon.types.standard.ByteLongConversion;
@@ -39,7 +39,7 @@ public class TypeConverterModule
 	 * 
 	 * @param binder
 	 */
-	@ModuleDescription
+	@Description
 	public void bindTypeConverter(Binder binder)
 	{
 		binder.bind(TypeConverter.class).to(TypeConverterImpl.class);

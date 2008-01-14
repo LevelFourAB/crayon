@@ -6,7 +6,7 @@ import se.l4.crayon.EntryPoint;
 import se.l4.crayon.ErrorHandler;
 import se.l4.crayon.ErrorManager;
 import se.l4.crayon.ServiceManager;
-import se.l4.crayon.annotation.ModuleDescription;
+import se.l4.crayon.annotation.Description;
 
 /**
  * Module that is always loaded, containing the base configuration and bindings
@@ -26,7 +26,7 @@ public class EntryPointModule
 		
 	}
 	
-	@ModuleDescription
+	@Description
 	public void configure(Binder binder)
 	{
 		// Reference to entry point

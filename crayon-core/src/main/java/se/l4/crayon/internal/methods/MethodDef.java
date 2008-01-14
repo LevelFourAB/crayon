@@ -2,7 +2,6 @@ package se.l4.crayon.internal.methods;
 
 import java.lang.reflect.Method;
 
-import se.l4.crayon.annotation.ModuleDescription;
 import se.l4.crayon.annotation.Order;
 
 public class MethodDef
@@ -31,13 +30,6 @@ public class MethodDef
 		Order order = method.getAnnotation(Order.class);
 		
 		return order == null ? new String[0] : order.value();
-	}
-	
-	public Class<?>[] getDependencies()
-	{
-		ModuleDescription module = method.getAnnotation(ModuleDescription.class);
-		
-		return module == null ? new Class[0] : module.dependencies();
 	}
 	
 	@Override

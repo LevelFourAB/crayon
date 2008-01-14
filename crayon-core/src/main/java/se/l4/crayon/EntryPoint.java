@@ -20,7 +20,8 @@ import com.google.inject.Key;
 import com.google.inject.Module;
 
 import se.l4.crayon.annotation.Contribution;
-import se.l4.crayon.annotation.ModuleDescription;
+import se.l4.crayon.annotation.Dependencies;
+import se.l4.crayon.annotation.Description;
 import se.l4.crayon.internal.ClassLocator;
 import se.l4.crayon.internal.EntryPointModule;
 import se.l4.crayon.internal.methods.MethodDef;
@@ -146,6 +147,7 @@ public class EntryPoint
 	public EntryPoint add(Class<?> type)
 	{
 		modules.add(type);
+		addDependencies(type);
 		
 		return this;
 	}
@@ -155,6 +157,7 @@ public class EntryPoint
 		moduleInstances.put(instance.getClass(), instance);
 		
 		modules.add(instance.getClass());
+		addDependencies(instance.getClass());
 		
 		return this;
 	}
@@ -162,6 +165,7 @@ public class EntryPoint
 	public EntryPoint addGuiceModule(Module module)
 	{
 		guiceModules.add(module);
+		addInstance(module);
 		
 		return this;
 	}
@@ -171,6 +175,7 @@ public class EntryPoint
 		guiceModules.add(
 			configurationInjector.getInstance(type)
 		);
+		add(type);
 		
 		return this;
 	}
@@ -205,12 +210,24 @@ public class EntryPoint
 		manager.startAll();
 	}
 	
+	private void addDependencies(Class<?> type)
+	{
+		Dependencies deps = type.getAnnotation(Dependencies.class);
+		if(deps != null)
+		{
+			for(Class<?> c : deps.value())
+			{
+				add(c);
+			}
+		}
+	}
+	
 	/**
 	 * Initialize all modules by running their module descriptors in order.
 	 */
 	private void initModuleDescriptors()
 	{
-		MethodResolver resolver = new MethodResolver(ModuleDescription.class,
+		MethodResolver resolver = new MethodResolver(Description.class,
 			new MethodResolverCallback()
 			{
 				public Object getInstance(Class<?> c)
@@ -222,7 +239,7 @@ public class EntryPoint
 				{
 					String s = 
 						def.getMethod()
-							.getAnnotation(ModuleDescription.class)
+							.getAnnotation(Description.class)
 							.name();
 					
 					return "".equals(s) 

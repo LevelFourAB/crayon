@@ -18,16 +18,8 @@ import com.google.inject.Binder;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface ModuleDescription
+public @interface Description
 {
 	/** Name of module, can be used for ordering. */
 	String name() default "";
-	
-	/**
-	 * List of dependencies that this module description has, will make sure
-	 * that these modules are processed.
-	 *
-	 * @return
-	 */
-	Class<?>[] dependencies() default {};
 }
