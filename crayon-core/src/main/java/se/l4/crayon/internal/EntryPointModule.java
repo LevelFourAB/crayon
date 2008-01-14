@@ -3,8 +3,6 @@ package se.l4.crayon.internal;
 import com.google.inject.Binder;
 
 import se.l4.crayon.EntryPoint;
-import se.l4.crayon.ErrorHandler;
-import se.l4.crayon.ErrorManager;
 import se.l4.crayon.ServiceManager;
 import se.l4.crayon.annotation.Description;
 
@@ -34,10 +32,6 @@ public class EntryPointModule
 		
 		// Services
 		binder.bind(ServiceManager.class).to(ServiceManagerImpl.class);
-		
-		// Error handling
-		binder.bind(ErrorManager.class).to(ErrorManagerImpl.class);
-		binder.bind(ErrorHandler.class).to(ErrorHandlerImpl.class);
 	}
 	
 }

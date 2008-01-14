@@ -1,4 +1,5 @@
-package se.l4.crayon;
+package se.l4.crayon.error;
+
 
 /**
  * Manager of error handlers, used to define which error handlers should

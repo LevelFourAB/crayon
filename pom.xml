@@ -15,6 +15,7 @@
 	<modules>
 		<module>crayon-core</module>
 		<module>crayon-lib-types</module>
+		<module>crayon-lib-error</module>
 	</modules>
 	
 	<dependencies>

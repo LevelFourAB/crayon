@@ -1,9 +1,10 @@
-package se.l4.crayon.internal;
+package se.l4.crayon.error.internal;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import se.l4.crayon.ErrorHandler;
+import se.l4.crayon.error.ErrorHandler;
+
 
 /**
  * Implementation of {@link ErrorHandler} that acts as a facade to the real

@@ -1,11 +1,12 @@
-package se.l4.crayon.internal;
+package se.l4.crayon.error.internal;
 
 import java.util.LinkedHashSet;
 
 import com.google.inject.Singleton;
 
-import se.l4.crayon.ErrorHandler;
-import se.l4.crayon.ErrorManager;
+import se.l4.crayon.error.ErrorHandler;
+import se.l4.crayon.error.ErrorManager;
+
 
 /**
  * Singleton implementation of the error manager.
