@@ -3,6 +3,9 @@ package se.l4.crayon.internal;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
@@ -20,6 +23,9 @@ import se.l4.crayon.ServiceManager;
 public class ServiceManagerImpl
 	implements ServiceManager
 {
+	private static final Logger logger =
+		LoggerFactory.getLogger(ServiceManagerImpl.class);
+	
 	private Injector injector;
 	private Set<ManagedService> services;
 	
@@ -47,12 +53,16 @@ public class ServiceManagerImpl
 	public void startService(ManagedService service)
 		throws Exception
 	{
+		logger.info("Starting service: {}", service);
+		
 		service.start();
 	}
 
 	public void stopService(ManagedService service)
 		throws Exception
 	{
+		logger.info("Stopping service: {}", service);
+		
 		service.stop();
 	}
 
@@ -62,7 +72,7 @@ public class ServiceManagerImpl
 		{
 			try
 			{
-				service.start();
+				startService(service);
 			}
 			catch(Exception e)
 			{
@@ -78,7 +88,7 @@ public class ServiceManagerImpl
 		{
 			try
 			{
-				service.stop();
+				stopService(service);
 			}
 			catch(Exception e)
 			{

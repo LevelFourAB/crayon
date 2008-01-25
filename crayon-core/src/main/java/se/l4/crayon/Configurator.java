@@ -11,9 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Binder;
-import com.google.inject.Binding;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -74,9 +76,12 @@ import se.l4.crayon.internal.methods.MethodResolverCallback;
  * @author Andreas Holstenson
  *
  */
-public class EntryPoint
+public class Configurator
 {
 	public static final String MANIFEST_KEY = "System-Modules";
+	
+	private static final Logger logger = 
+		LoggerFactory.getLogger(Configurator.class);
 	
 	private Injector configurationInjector;
 	
@@ -89,7 +94,7 @@ public class EntryPoint
 	
 	private EntryPointModule entryPointModule;
 	
-	public EntryPoint()
+	public Configurator()
 	{
 		configurationInjector = Guice.createInjector();
 	
@@ -110,9 +115,9 @@ public class EntryPoint
 	 * @return
 	 * 		self
 	 */
-	public EntryPoint discoverModules()
+	public Configurator discoverModules()
 	{
-		return discoverModules(MANIFEST_KEY);
+		return discover(MANIFEST_KEY);
 	}
 	
 	/**
@@ -123,15 +128,17 @@ public class EntryPoint
 	 * 		manifest key to look in
 	 * @return
 	 */
-	public EntryPoint discoverModules(String manifestKey)
+	public Configurator discover(String manifestKey)
 	{
-		List<Class<Module>> modules = 
-			ClassLocator.getClassModules(EntryPoint.class.getClassLoader(),
-					Module.class, manifestKey);
+		logger.info("Attempting discovery with key: {}", manifestKey);
 		
-		for(Class<Module> m : modules)
+		List<Class<Object>> modules = 
+			ClassLocator.getClassModules(Configurator.class.getClassLoader(),
+					Object.class, manifestKey);
+		
+		for(Class<Object> m : modules)
 		{
-			modules.add(m);
+			add(m);
 		}
 		
 		return this;
@@ -144,16 +151,20 @@ public class EntryPoint
 	 * @param type
 	 * @return
 	 */
-	public EntryPoint add(Class<?> type)
+	public Configurator add(Class<?> type)
 	{
+		logger.info("Adding: {}", type);
+		
 		modules.add(type);
 		addDependencies(type);
 		
 		return this;
 	}
 	
-	public EntryPoint addInstance(Object instance)
+	public Configurator addInstance(Object instance)
 	{
+		logger.info("Adding instance: {}", instance);
+		
 		moduleInstances.put(instance.getClass(), instance);
 		
 		modules.add(instance.getClass());
@@ -162,16 +173,20 @@ public class EntryPoint
 		return this;
 	}
 	
-	public EntryPoint addGuiceModule(Module module)
+	public Configurator addGuiceModule(Module module)
 	{
+		logger.info("Adding Guice module: {}", module);
+		
 		guiceModules.add(module);
 		addInstance(module);
 		
 		return this;
 	}
 	
-	public EntryPoint addGuiceModule(Class<? extends Module> type)
+	public Configurator addGuiceModule(Class<? extends Module> type)
 	{
+		logger.info("Adding Guice module: {}", type);
+		
 		guiceModules.add(
 			configurationInjector.getInstance(type)
 		);
@@ -193,14 +208,14 @@ public class EntryPoint
 	}
 	
 	/**
-	 * Configure and start services as defined in the entry point.
+	 * Configure and start services.
 	 */
-	public void start()
+	public void configure()
 	{
-		initModuleDescriptors();
+		logger.info("Performing configuration and startup");
 		
-		// configure logging (if possible)
-		configureLogging();
+		// init descriptors
+		initModuleDescriptors();
 		
 		// go through each and check if any configuration should be done
 		performContributions();
@@ -227,12 +242,14 @@ public class EntryPoint
 	 */
 	private void initModuleDescriptors()
 	{
+		logger.debug("Initializing service descriptions");
+		
 		MethodResolver resolver = new MethodResolver(Description.class,
 			new MethodResolverCallback()
 			{
 				public Object getInstance(Class<?> c)
 				{
-					return EntryPoint.this.getInstance(c);
+					return Configurator.this.getInstance(c);
 				}
 
 				public String getName(MethodDef def)
@@ -301,12 +318,14 @@ public class EntryPoint
 	 */
 	private void performContributions()
 	{
+		logger.debug("Performing contributions");
+		
 		MethodResolver resolver = new MethodResolver(Contribution.class,
 			new MethodResolverCallback()
 			{
 				public Object getInstance(Class<?> c)
 				{
-					return EntryPoint.this.getInstance(c);
+					return Configurator.this.getInstance(c);
 				}
 
 				public String getName(MethodDef def)
@@ -375,22 +394,8 @@ public class EntryPoint
 		}
 	}
 	
-	private void configureLogging()
-	{
-		// retrieve binding first
-		Binding<LoggingConfigurator> logging =
-			injector.getBinding(Key.get(LoggingConfigurator.class));
-		
-		// if binding exists perform configuration
-		if(logging != null)
-		{
-			LoggingConfigurator configurator = logging.getProvider().get();
-			configurator.configure();
-		}
-	}
-	
 	/**
-	 * Get the injector of the entry point.
+	 * Get the injector that has been created.
 	 * 
 	 * @return
 	 */
