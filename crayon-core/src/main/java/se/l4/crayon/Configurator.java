@@ -45,7 +45,7 @@ import se.l4.crayon.internal.methods.MethodResolverCallback;
  * Those classes will be loaded and configured by the entry point.
  * 
  * <p>
- * Discovery is done via the method {@link #discoverModules()}.
+ * Discovery is done via the method {@link #discover()}.
  * 
  * <h2>Contribution support</h2>
  * Each modules supports contribution of properties or configuration of objects.
@@ -115,7 +115,7 @@ public class Configurator
 	 * @return
 	 * 		self
 	 */
-	public Configurator discoverModules()
+	public Configurator discover()
 	{
 		return discover(MANIFEST_KEY);
 	}
