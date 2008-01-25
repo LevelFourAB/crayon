@@ -11,7 +11,6 @@ import java.util.Set;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.google.inject.Singleton;
 
 /**
  * Implementation of {@link TypeConverter}, supports chaining of conversions
@@ -20,34 +19,14 @@ import com.google.inject.Singleton;
  * @author Andreas Holstenson
  *
  */
-@Singleton
-public class TypeConverterImpl
+public class DefaultTypeConverter
 	implements TypeConverter
 {
-	private final Conversion<Object, Object> NULL =
-		new Conversion<Object, Object>()
-		{
-			public Object convert(Object in)
-			{
-				return null;
-			}
-
-			public Class<Object> getInput()
-			{
-				return null;
-			}
-
-			public Class<Object> getOutput()
-			{
-				return null;
-			}
-		};
-		
 	private Map<Class<?>, List<Conversion<?, ?>>> conversions;
 	private Injector injector;
 	
 	@Inject
-	public TypeConverterImpl(Injector injector)
+	public DefaultTypeConverter(Injector injector)
 	{
 		this.injector = injector;
 		
@@ -97,6 +76,20 @@ public class TypeConverterImpl
 		return (T) tc.convert(in);
 	}
 
+	/**
+	 * Find the conversion to use for converting {@code in} to {@code out}.
+	 * 
+	 * @param <I>
+	 * 		in type
+	 * @param <O>
+	 * 		out type
+	 * @param in
+	 * 		input class
+	 * @param out
+	 * 		output class
+	 * @return
+	 * 		conversion to use, {@code null} if none was found
+	 */
 	@SuppressWarnings("unchecked")
 	private <I, O> Conversion<I, O> findConversion(Class<I> in, Class<O> out)
 	{
@@ -142,7 +135,7 @@ public class TypeConverterImpl
 			}
 		}
 		
-		return (Conversion<I, O>) NULL;
+		return null;
 	}
 	
 	private static Set<Class<?>> getInheritance(Class<?> in)
@@ -155,6 +148,12 @@ public class TypeConverterImpl
 		return result;
 	}
 	
+	/**
+	 * Get inheritance of type.
+	 * 
+	 * @param in
+	 * @param result
+	 */
 	private static void getInheritance(Class<?> in, Set<Class<?>> result)
 	{
 		Class<?> superclass = getSuperclass(in);
@@ -168,6 +167,12 @@ public class TypeConverterImpl
 		getInterfaceInheritance(in, result);
 	}
 	
+	/**
+	 * Get interfaces that the type inherits from.
+	 * 
+	 * @param in
+	 * @param result
+	 */
 	private static void getInterfaceInheritance(Class<?> in, Set<Class<?>> result)
 	{
 		for(Class<?> c : in.getInterfaces())
@@ -178,6 +183,12 @@ public class TypeConverterImpl
 		}
 	}
 	
+	/**
+	 * Get superclass of class.
+	 * 
+	 * @param in
+	 * @return
+	 */
 	private static Class<?> getSuperclass(Class<?> in)
 	{
 		if(in == null)
@@ -200,6 +211,12 @@ public class TypeConverterImpl
 		return in.getSuperclass();
 	}
 	
+	/**
+	 * Wrap the given primitive in its object equivalent.
+	 * 
+	 * @param in
+	 * @return
+	 */
 	private static Class<?> wrap(Class<?> in)
 	{
 		if(false == in.isPrimitive())
@@ -208,7 +225,31 @@ public class TypeConverterImpl
 		}
 		else if(in == boolean.class)
 		{
-			return Boolean.class;
+			return Boolean.TYPE;
+		}
+		else if(in == int.class)
+		{
+			return Integer.TYPE;
+		}
+		else if(in == float.class)
+		{
+			return Float.TYPE;
+		}
+		else if(in == double.class)
+		{
+			return Double.TYPE;
+		}
+		else if(in == byte.class)
+		{
+			return Byte.TYPE;
+		}
+		else if(in == short.class)
+		{
+			return Short.TYPE;
+		}
+		else if(in == long.class)
+		{
+			return Long.TYPE;
 		}
 		else
 		{

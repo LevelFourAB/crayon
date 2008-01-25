@@ -1,6 +1,7 @@
 package se.l4.crayon.types;
 
 import com.google.inject.Binder;
+import com.google.inject.Scopes;
 
 import se.l4.crayon.annotation.Contribution;
 import se.l4.crayon.annotation.Description;
@@ -42,7 +43,8 @@ public class TypeConverterModule
 	@Description
 	public void bindTypeConverter(Binder binder)
 	{
-		binder.bind(TypeConverter.class).to(TypeConverterImpl.class);
+		binder.bind(TypeConverter.class).to(DefaultTypeConverter.class)
+			.in(Scopes.SINGLETON);
 	}
 	
 	/**

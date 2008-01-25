@@ -153,10 +153,11 @@ public class Configurator
 	 */
 	public Configurator add(Class<?> type)
 	{
-		logger.info("Adding: {}", type);
-		
-		modules.add(type);
-		addDependencies(type);
+		if(modules.add(type))
+		{
+			logger.info("Adding: {}", type);
+			addDependencies(type);
+		}
 		
 		return this;
 	}
