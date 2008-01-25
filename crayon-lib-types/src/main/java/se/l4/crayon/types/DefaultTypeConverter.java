@@ -135,6 +135,7 @@ public class DefaultTypeConverter
 			}
 		}
 		
+//		return (Conversion<I, O>) NULL;
 		return null;
 	}
 	
@@ -225,31 +226,7 @@ public class DefaultTypeConverter
 		}
 		else if(in == boolean.class)
 		{
-			return Boolean.TYPE;
-		}
-		else if(in == int.class)
-		{
-			return Integer.TYPE;
-		}
-		else if(in == float.class)
-		{
-			return Float.TYPE;
-		}
-		else if(in == double.class)
-		{
-			return Double.TYPE;
-		}
-		else if(in == byte.class)
-		{
-			return Byte.TYPE;
-		}
-		else if(in == short.class)
-		{
-			return Short.TYPE;
-		}
-		else if(in == long.class)
-		{
-			return Long.TYPE;
+			return Boolean.class;
 		}
 		else
 		{
