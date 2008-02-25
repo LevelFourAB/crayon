@@ -11,13 +11,23 @@
 	<name>crayon-base</name>
 	
 	<packaging>pom</packaging>
-	
+
 	<modules>
 		<module>crayon-core</module>
 		<module>crayon-lib-types</module>
 		<module>crayon-lib-error</module>
 	</modules>
-	
+
+	<!-- License -->
+	<licenses>
+		<license>
+			<name>Apache 2</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<!-- Common dependencies (for testing) -->
 	<dependencies>
 		<dependency>
 			<groupId>org.slf4j</groupId>
