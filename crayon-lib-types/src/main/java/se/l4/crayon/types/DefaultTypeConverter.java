@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 
 /**
  * Implementation of {@link TypeConverter}, supports chaining of conversions
@@ -38,14 +37,27 @@ public class DefaultTypeConverter
 	implements TypeConverter
 {
 	private Map<Class<?>, List<Conversion<?, ?>>> conversions;
-	private Injector injector;
+	
+	private static Map<Class<?>, Class<?>> primitives;
+	
+	static
+	{
+		primitives = new HashMap<Class<?>, Class<?>>();
+		primitives.put(boolean.class, Boolean.class);
+		primitives.put(byte.class, Byte.class);
+		primitives.put(short.class, Short.class);
+		primitives.put(int.class, Integer.class);
+		primitives.put(long.class, Long.class);
+		primitives.put(float.class, Float.class);
+		primitives.put(double.class, Double.class);
+		primitives.put(void.class, Void.class);
+	}
 	
 	@Inject
-	public DefaultTypeConverter(Injector injector)
+	public DefaultTypeConverter()
 	{
-		this.injector = injector;
-		
 		conversions = new HashMap<Class<?>, List<Conversion<?,?>>>();
+		
 	}
 	
 	private List<Conversion<?, ?>> getListFor(Class<?> c)
@@ -69,12 +81,6 @@ public class DefaultTypeConverter
 		list.add(conversion);
 	}
 	
-	public void add(Class<? extends Conversion<?, ?>> conversion)
-	{
-		Conversion<?, ?> c = injector.getInstance(conversion);
-		add(c);
-	}
-
 	@SuppressWarnings("unchecked")
 	public <T> T convert(Object in, Class<T> output)
 	{
@@ -89,6 +95,11 @@ public class DefaultTypeConverter
 		Conversion tc = findConversion(type, output);
 		
 		return (T) tc.convert(in);
+	}
+	
+	public boolean canConvertBetween(Class<?> in, Class<?> out)
+	{
+		return findConversion(in, out) != null;
 	}
 
 	/**
@@ -150,7 +161,6 @@ public class DefaultTypeConverter
 			}
 		}
 		
-//		return (Conversion<I, O>) NULL;
 		return null;
 	}
 	
@@ -239,9 +249,11 @@ public class DefaultTypeConverter
 		{
 			return in;
 		}
-		else if(in == boolean.class)
+		
+		Class<?> c = primitives.get(in);
+		if(c != null)
 		{
-			return Boolean.class;
+			return c;
 		}
 		else
 		{

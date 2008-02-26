@@ -34,7 +34,7 @@ public class LongConversionTest
 	@Test
 	public void testLongToString()
 	{
-		TypeConverter tc = new DefaultTypeConverter(null);
+		TypeConverter tc = new DefaultTypeConverter();
 		tc.add(new LongStringConversion());
 		tc.add(new StringLongConversion());
 		
@@ -47,7 +47,7 @@ public class LongConversionTest
 	@Test
 	public void testLongToDouble()
 	{
-		TypeConverter tc = new DefaultTypeConverter(null);
+		TypeConverter tc = new DefaultTypeConverter();
 		tc.add(new LongDoubleConversion());
 		tc.add(new DoubleLongConversion());
 		
@@ -61,7 +61,7 @@ public class LongConversionTest
 	@Test
 	public void testLongToInteger()
 	{
-		TypeConverter tc = new DefaultTypeConverter(null);
+		TypeConverter tc = new DefaultTypeConverter();
 		tc.add(new LongIntegerConversion());
 		tc.add(new IntegerLongConversion());
 		
@@ -75,12 +75,12 @@ public class LongConversionTest
 	@Test
 	public void testLongToShort()
 	{
-		TypeConverter tc = new DefaultTypeConverter(null);
+		TypeConverter tc = new DefaultTypeConverter();
 		tc.add(new LongShortConversion());
 		tc.add(new ShortLongConversion());
 		
-		convert(tc, (short) 8, Long.class, 8l);
-		convert(tc, Short.MAX_VALUE, Long.class, (long) Short.MAX_VALUE);
+		convert(tc, (short) 8, long.class, 8l);
+		convert(tc, Short.MAX_VALUE, long.class, (long) Short.MAX_VALUE);
 		
 		convert(tc, 8l, Short.class, (short) 8);
 		convert(tc, (long) (Short.MAX_VALUE + 10), Short.class, (short) -32759);

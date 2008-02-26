@@ -47,5 +47,12 @@ public interface TypeConverter
 	 */
 	void add(Conversion<?, ?> conversion);
 	
-	void add(Class<? extends Conversion<?, ?>> conversion);
+	/**
+	 * Check if a conversion is supported.
+	 * 
+	 * @param in
+	 * @param out
+	 * @return
+	 */
+	boolean canConvertBetween(Class<?> in, Class<?> out);
 }
