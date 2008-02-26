@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.inject.Inject;
 
@@ -37,6 +38,7 @@ public class DefaultTypeConverter
 	implements TypeConverter
 {
 	private Map<Class<?>, List<Conversion<?, ?>>> conversions;
+	private Map<CacheKey, Conversion<?, ?>> cache;
 	
 	private static Map<Class<?>, Class<?>> primitives;
 	
@@ -58,6 +60,7 @@ public class DefaultTypeConverter
 	{
 		conversions = new HashMap<Class<?>, List<Conversion<?,?>>>();
 		
+		cache = new ConcurrentHashMap<CacheKey, Conversion<?,?>>();
 	}
 	
 	private List<Conversion<?, ?>> getListFor(Class<?> c)
@@ -92,7 +95,24 @@ public class DefaultTypeConverter
 			return (T) in;
 		}
 		
-		Conversion tc = findConversion(type, output);
+		// Check cache first
+		CacheKey key = new CacheKey(type, output);
+		Conversion tc = cache.get(key);
+		
+		if(tc == null)
+		{
+			// If not cached find suitable conversion
+			tc = findConversion(type, output);
+
+			if(tc == null)
+			{
+				// No suitable conversion found
+				throw new ConversionException("Unable to find suitable conversion between "
+					+ type + " and " + output);
+			}
+			
+			cache.put(key, tc);
+		}
 		
 		return (T) tc.convert(in);
 	}
@@ -258,6 +278,42 @@ public class DefaultTypeConverter
 		else
 		{
 			throw new ConversionException("Unsupported type " + in);
+		}
+	}
+	
+	private static class CacheKey
+	{
+		private Class<?> in;
+		private Class<?> out;
+		
+		public CacheKey(Class<?> in, Class<?> out)
+		{
+			this.in = in;
+			this.out = out;
+		}
+		
+		@Override
+		public boolean equals(Object obj)
+		{
+			if(obj instanceof CacheKey)
+			{
+				CacheKey key = (CacheKey) obj;
+				return in.equals(key.in) && out.equals(key.out);
+			}
+			
+			return false;
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			int c = 37;
+			int t = 17; 
+			
+			t = t * c + in.hashCode();
+			t = t * c + out.hashCode();
+			
+			return t;
 		}
 	}
 }
