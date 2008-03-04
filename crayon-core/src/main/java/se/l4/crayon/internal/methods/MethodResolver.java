@@ -126,6 +126,46 @@ public class MethodResolver
 						resolver.addDependency(def, d);
 					}
 				}
+				else if(s.equals("last"))
+				{
+					for(MethodDef d : methods.values())
+					{
+						boolean ok = true;
+						for(String sd : d.getOrder())
+						{
+							if(sd.equals("last"))
+							{
+								ok = false;
+								break;
+							}
+						}
+						
+						if(ok)
+						{
+							resolver.addDependency(def, d);
+						}
+					}
+				}
+				else if(s.equals("first"))
+				{
+					for(MethodDef d : methods.values())
+					{
+						boolean ok = true;
+						for(String sd : d.getOrder())
+						{
+							if(sd.equals("first"))
+							{
+								ok = false;
+								break;
+							}
+						}
+						
+						if(ok)
+						{
+							resolver.addDependency(d, def);
+						}
+					}
+				}
 				else
 				{
 					throw new ConfigurationException("Invalid order `" + s 

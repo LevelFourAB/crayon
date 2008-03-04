@@ -19,7 +19,9 @@ import com.google.inject.Binder;
 
 import se.l4.crayon.Configurator;
 import se.l4.crayon.ServiceManager;
+import se.l4.crayon.annotation.Contribution;
 import se.l4.crayon.annotation.Description;
+import se.l4.crayon.annotation.Order;
 
 /**
  * Module that is always loaded, containing the base configuration and bindings
@@ -49,4 +51,10 @@ public class EntryPointModule
 		binder.bind(ServiceManager.class).to(ServiceManagerImpl.class);
 	}
 	
+	@Contribution(name="services")
+	@Order("last")
+	public void startServices(ServiceManager manager)
+	{
+		manager.startAll();
+	}
 }

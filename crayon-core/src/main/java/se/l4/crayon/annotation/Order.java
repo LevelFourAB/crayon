@@ -29,6 +29,14 @@ import java.lang.annotation.Target;
  * <ul>
  * 	<li>{@code before:name} - define that the method should run before {@code name}</li>
  * 	<li>{@code after:name} - define that the method should run before {@code name}</li>
+ *  <li>
+ *  	{@code last} - define that a method should run last (depending on other 
+ *  	order-definitions)
+ *  </li>
+ *  <li>
+ *  	{@code first} - define that a method should run first (depending on other 
+ *  	order-definitions)
+ *  </li>
  * </ul>
  * 
  * <p>

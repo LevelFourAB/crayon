@@ -17,6 +17,15 @@ package se.l4.crayon;
 
 /**
  * Manager of services, used for starting and stopping all system services.
+ * Designed to be given services by the use of contributions. In your
+ * configuration (see {@link Configurator}) create a method as:
+ * 
+ * <pre>
+ * {@literal @Contribution}
+ * public void contribute(ServiceManager manager) {
+ * 		manager.addService(MyService.class);
+ * }
+ * </pre>
  * 
  * @author Andreas Holstenson
  *

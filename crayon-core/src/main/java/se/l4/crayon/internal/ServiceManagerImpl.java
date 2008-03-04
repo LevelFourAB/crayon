@@ -39,7 +39,7 @@ public class ServiceManagerImpl
 	implements ServiceManager
 {
 	private static final Logger logger =
-		LoggerFactory.getLogger(ServiceManagerImpl.class);
+		LoggerFactory.getLogger(ServiceManager.class);
 	
 	private Injector injector;
 	private Set<ManagedService> services;
@@ -50,6 +50,18 @@ public class ServiceManagerImpl
 		services = new CopyOnWriteArraySet<ManagedService>();
 		
 		this.injector = injector;
+		
+		// Add a shutdown hook that will close all services
+		Runtime.getRuntime().addShutdownHook(
+			new Thread() 
+			{
+				@Override
+				public void run()
+				{
+					ServiceManagerImpl.this.stopAll();
+				}
+			}
+		);
 	}
 	
 	public void addService(ManagedService service)

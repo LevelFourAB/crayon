@@ -118,9 +118,10 @@ public class Configurator
 		guiceModules = new LinkedList<Module>();
 		
 		// add default module
-		modules.add(EntryPointModule.class);
 		entryPointModule = new EntryPointModule(this);
-		addInstance(entryPointModule);
+		modules.add(EntryPointModule.class);
+		
+		moduleInstances.put(EntryPointModule.class, entryPointModule);
 	}
 	
 	/**
@@ -194,19 +195,19 @@ public class Configurator
 		logger.info("Adding Guice module: {}", module);
 		
 		guiceModules.add(module);
-		addInstance(module);
+		
+		moduleInstances.put(module.getClass(), module);
+		
+		modules.add(module.getClass());
+		addDependencies(module.getClass());
 		
 		return this;
 	}
 	
 	public Configurator addGuiceModule(Class<? extends Module> type)
 	{
-		logger.info("Adding Guice module: {}", type);
-		
-		guiceModules.add(
-			configurationInjector.getInstance(type)
-		);
-		add(type);
+		Module m = configurationInjector.getInstance(type);
+		addGuiceModule(m);
 		
 		return this;
 	}
@@ -235,10 +236,6 @@ public class Configurator
 		
 		// go through each and check if any configuration should be done
 		performContributions();
-		
-		// retrieve ServiceManager and start all managed services
-		ServiceManager manager = injector.getInstance(ServiceManager.class);
-		manager.startAll();
 	}
 	
 	private void addDependencies(Class<?> type)
