@@ -40,10 +40,10 @@ import se.l4.crayon.annotation.Contribution;
 import se.l4.crayon.annotation.Dependencies;
 import se.l4.crayon.annotation.Description;
 import se.l4.crayon.internal.ClassLocator;
-import se.l4.crayon.internal.EntryPointModule;
 import se.l4.crayon.internal.methods.MethodDef;
 import se.l4.crayon.internal.methods.MethodResolver;
 import se.l4.crayon.internal.methods.MethodResolverCallback;
+import se.l4.crayon.internal.EntryPointModule;
 
 /**
  * Entry point for system, used for defining which modules should be used and

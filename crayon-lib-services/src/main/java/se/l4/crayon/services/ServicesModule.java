@@ -13,21 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.l4.crayon;
+package se.l4.crayon.services;
+
+import com.google.inject.Binder;
+
+import se.l4.crayon.annotation.Contribution;
+import se.l4.crayon.annotation.Order;
+import se.l4.crayon.services.internal.ServiceManagerImpl;
 
 /**
- * Managed service, service that is started/stopped by the system kernel.
- * Should be marked as a singleton (via {@link com.google.inject.Singleton}
- * annotation).
+ * Module configuration for services. Binds {@link ServiceManager} to its
+ * default implementation.
  * 
  * @author Andreas Holstenson
  *
  */
-public interface ManagedService
+public class ServicesModule
 {
-	/** Start service. */
-	void start() throws Exception;
+	public void configure(Binder binder)
+	{
+		// Services
+		binder.bind(ServiceManager.class).to(ServiceManagerImpl.class);
+	}
 	
-	/** Stop service. */
-	void stop() throws Exception;
+	@Contribution(name="services")
+	@Order("last")
+	public void startServices(ServiceManager manager)
+	{
+		manager.startAll();
+	}
 }

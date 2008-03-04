@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.l4.crayon.internal;
+package se.l4.crayon.services.internal;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -25,8 +25,8 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
 
-import se.l4.crayon.ManagedService;
-import se.l4.crayon.ServiceManager;
+import se.l4.crayon.services.ManagedService;
+import se.l4.crayon.services.ServiceManager;
 
 /**
  * Implementation of {@link ServiceManager}.  

@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.l4.crayon;
+package se.l4.crayon.services;
+
+import se.l4.crayon.Configurator;
 
 /**
  * Manager of services, used for starting and stopping all system services.

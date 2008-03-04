@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.l4.crayon.test;
+package se.l4.crayon.services;
 
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
@@ -24,14 +24,14 @@ import org.testng.annotations.Test;
 
 import com.google.inject.Injector;
 
-import se.l4.crayon.ManagedService;
-import se.l4.crayon.ServiceManager;
-import se.l4.crayon.internal.ServiceManagerImpl;
+import se.l4.crayon.services.ManagedService;
+import se.l4.crayon.services.ServiceManager;
+import se.l4.crayon.services.internal.ServiceManagerImpl;
 
 /**
  * Testing of {@link ServiceManagerImpl}.
  * 
- * @author andreas
+ * @author Andreas Holstenson
  *
  */
 public class ServiceManagerTest
