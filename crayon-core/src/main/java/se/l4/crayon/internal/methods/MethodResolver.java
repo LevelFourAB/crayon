@@ -27,6 +27,13 @@ import java.util.Set;
 import se.l4.crayon.ConfigurationException;
 import se.l4.crayon.internal.DependencyResolver;
 
+/**
+ * Class for discovering methods annotated with a special annotation and the
+ * order they should be invoked in.
+ * 
+ * @author Andreas Holstenson
+ *
+ */
 public class MethodResolver
 {
 	private HashSet<Class<?>> classes;

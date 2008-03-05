@@ -18,6 +18,7 @@ package se.l4.crayon.services;
 import com.google.inject.Binder;
 
 import se.l4.crayon.annotation.Contribution;
+import se.l4.crayon.annotation.Description;
 import se.l4.crayon.annotation.Order;
 import se.l4.crayon.services.internal.ServiceManagerImpl;
 
@@ -30,6 +31,7 @@ import se.l4.crayon.services.internal.ServiceManagerImpl;
  */
 public class ServicesModule
 {
+	@Description
 	public void configure(Binder binder)
 	{
 		// Services

@@ -40,10 +40,10 @@ import se.l4.crayon.annotation.Contribution;
 import se.l4.crayon.annotation.Dependencies;
 import se.l4.crayon.annotation.Description;
 import se.l4.crayon.internal.ClassLocator;
+import se.l4.crayon.internal.EntryPointModule;
 import se.l4.crayon.internal.methods.MethodDef;
 import se.l4.crayon.internal.methods.MethodResolver;
 import se.l4.crayon.internal.methods.MethodResolverCallback;
-import se.l4.crayon.internal.EntryPointModule;
 
 /**
  * Entry point for system, used for defining which modules should be used and
@@ -81,12 +81,9 @@ import se.l4.crayon.internal.EntryPointModule;
  * </pre>
  * 
  * <h2>Logging</h2>
- * The entry point supports configuration of a logging system of your choice.
- * This is done via binding an implementation to {@link LoggingConfigurator}.
- * After all modules have been configured, the configurator for logging will
- * be retrieved and run. After this all contributions from modules will be made.
- * Due to this logging in modules can only be done in those methods that are
- * run as part of the contribution process.
+ * Crayon uses <a href="http://slf4j.org/">slf4j</a> for logging. Slf4j should
+ * be configured before the {@code Configurator} is used.
+ * 
  * 
  * @author Andreas Holstenson
  *
