@@ -15,6 +15,8 @@
  */
 package se.l4.crayon.services;
 
+import java.util.Collection;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,12 +49,18 @@ public class ServicesModule
 	{
 		manager.startAll();
 		
+		Collection<ServiceInfo> info = manager.getInfo();
+		if(info.isEmpty())
+		{
+			return;
+		}
+		
 		Logger logger = LoggerFactory.getLogger(ServiceManager.class);
 		logger.info("Service status:");
 		
-		for(ServiceInfo info : manager.getInfo())
+		for(ServiceInfo i : info)
 		{
-			logger.info(String.format("[ %-7s ] %s", info.getStatus(), info.getService()));
+			logger.info(String.format("[ %-7s ] %s", i.getStatus(), i.getService()));
 		}
 	}
 }
