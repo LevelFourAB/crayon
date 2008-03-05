@@ -92,4 +92,9 @@
 		</repository>
 	</repositories>
 	
+	<!-- SCM -->
+	<scm>
+		<connection>scm:svn:http://svn.l4.se/crayon/trunk</connection>
+	</scm>
+
 </project>
