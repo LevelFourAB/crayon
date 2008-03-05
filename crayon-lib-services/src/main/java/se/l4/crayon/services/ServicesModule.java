@@ -15,6 +15,9 @@
  */
 package se.l4.crayon.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Binder;
 
 import se.l4.crayon.annotation.Contribution;
@@ -43,5 +46,13 @@ public class ServicesModule
 	public void startServices(ServiceManager manager)
 	{
 		manager.startAll();
+		
+		Logger logger = LoggerFactory.getLogger(ServiceManager.class);
+		logger.info("Service status:");
+		
+		for(ServiceInfo info : manager.getInfo())
+		{
+			logger.info(String.format("[ %-7s ] %s", info.getStatus(), info.getService()));
+		}
 	}
 }

@@ -15,7 +15,10 @@
  */
 package se.l4.crayon.services.internal;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.slf4j.Logger;
@@ -26,7 +29,9 @@ import com.google.inject.Injector;
 import com.google.inject.Singleton;
 
 import se.l4.crayon.services.ManagedService;
+import se.l4.crayon.services.ServiceInfo;
 import se.l4.crayon.services.ServiceManager;
+import se.l4.crayon.services.ServiceStatus;
 
 /**
  * Implementation of {@link ServiceManager}.  
@@ -44,10 +49,13 @@ public class ServiceManagerImpl
 	private Injector injector;
 	private Set<ManagedService> services;
 	
+	private Map<ManagedService, ServiceInfoImpl> status;
+	
 	@Inject
 	public ServiceManagerImpl(Injector injector)
 	{
 		services = new CopyOnWriteArraySet<ManagedService>();
+		status = new ConcurrentHashMap<ManagedService, ServiceInfoImpl>();
 		
 		this.injector = injector;
 		
@@ -67,6 +75,9 @@ public class ServiceManagerImpl
 	public void addService(ManagedService service)
 	{
 		services.add(service);
+		
+		ServiceInfoImpl info = getInfo(service);
+		info.status = ServiceStatus.STOPPED;
 	}
 	
 	public ManagedService addService(Class<? extends ManagedService> service)
@@ -82,7 +93,24 @@ public class ServiceManagerImpl
 	{
 		logger.info("Starting service: {}", service);
 		
-		service.start();
+		ServiceInfoImpl info = getInfo(service);
+		
+		try
+		{
+			service.start();
+			
+			info.status = ServiceStatus.RUNNING;
+		}
+		catch(Exception e)
+		{
+			info.exception = e;
+			info.status = ServiceStatus.FAILED;
+			
+			throw e;
+		}
+		
+		
+		logger.info("Service started: {}", service);
 	}
 
 	public void stopService(ManagedService service)
@@ -90,7 +118,26 @@ public class ServiceManagerImpl
 	{
 		logger.info("Stopping service: {}", service);
 		
-		service.stop();
+		ServiceInfoImpl info = getInfo(service);
+		
+		try
+		{
+			if(info.status == ServiceStatus.RUNNING)
+			{
+				service.stop();
+
+				info.status = ServiceStatus.STOPPED;
+			}
+		}
+		catch(Exception e)
+		{
+			info.exception = e;
+			info.status = ServiceStatus.FAILED;
+			
+			throw e;
+		}
+		
+		logger.info("Service stopped: {}", service);
 	}
 
 	public void startAll()
@@ -103,8 +150,7 @@ public class ServiceManagerImpl
 			}
 			catch(Exception e)
 			{
-				e.printStackTrace();
-				// FIXME: HANDLE EXCEPTION
+				logger.warn("Failed to start: " + service + "; " + e.getMessage(), e);
 			}
 		}
 	}
@@ -119,9 +165,57 @@ public class ServiceManagerImpl
 			}
 			catch(Exception e)
 			{
-				e.printStackTrace();
-				// FIXME: HANDLE EXCEPTION
+				logger.warn("Failed to stop: " + service + "; " + e.getMessage(), e);
 			}
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public Collection<ServiceInfo> getInfo()
+	{
+		return (Collection) status.values();
+	}
+
+	public ServiceInfoImpl getInfo(ManagedService service)
+	{
+		ServiceInfoImpl info = status.get(service);
+		if(info == null)
+		{
+			info = new ServiceInfoImpl(service);
+			status.put(service, info);
+		}
+		
+		return info;
+	}
+	
+	private static class ServiceInfoImpl
+		implements ServiceInfo
+	{
+		private Exception exception;
+		private ManagedService service;
+		private ServiceStatus status;
+		
+		public ServiceInfoImpl(ManagedService service)
+		{
+			this.service = service;
+			this.status = ServiceStatus.STOPPED;
+			this.exception = null;
+		}
+		
+		public Exception getFailedWith()
+		{
+			return exception;
+		}
+
+		public ManagedService getService()
+		{
+			return service;
+		}
+
+		public ServiceStatus getStatus()
+		{
+			return status;
+		}
+		
 	}
 }

@@ -15,6 +15,8 @@
  */
 package se.l4.crayon.services;
 
+import java.util.Collection;
+
 import se.l4.crayon.Configurator;
 
 /**
@@ -77,4 +79,22 @@ public interface ServiceManager
 	 * Stop all services.
 	 */
 	void stopAll();
+	
+	/**
+	 * Get information about a certain service.
+	 * 
+	 * @param service
+	 * 		service to get infomration for
+	 * @return
+	 * 		service info
+	 */
+	ServiceInfo getInfo(ManagedService service);
+	
+	/**
+	 * Retrieve collection with all information about services.
+	 * 
+	 * @return
+	 * 		collection with service information
+	 */
+	Collection<ServiceInfo> getInfo();
 }
