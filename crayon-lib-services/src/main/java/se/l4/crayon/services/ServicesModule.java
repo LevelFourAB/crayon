@@ -60,7 +60,7 @@ public class ServicesModule
 		
 		for(ServiceInfo i : info)
 		{
-			logger.info(String.format("[ %-7s ] %s", i.getStatus(), i.getService()));
+			logger.info(i.toString());
 		}
 	}
 }

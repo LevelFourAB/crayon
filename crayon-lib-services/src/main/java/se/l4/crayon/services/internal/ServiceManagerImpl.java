@@ -91,53 +91,54 @@ public class ServiceManagerImpl
 	public void startService(ManagedService service)
 		throws Exception
 	{
-		logger.info("Starting service: {}", service);
-		
 		ServiceInfoImpl info = getInfo(service);
 		
 		try
 		{
+			info.status = ServiceStatus.STARTING;
+			log(info);
+			
 			service.start();
 			
 			info.status = ServiceStatus.RUNNING;
+			log(info);
 		}
 		catch(Exception e)
 		{
 			info.exception = e;
 			info.status = ServiceStatus.FAILED;
+			log(info);
 			
 			throw e;
 		}
-		
-		
-		logger.info("Service started: {}", service);
 	}
 
 	public void stopService(ManagedService service)
 		throws Exception
 	{
-		logger.info("Stopping service: {}", service);
-		
 		ServiceInfoImpl info = getInfo(service);
 		
 		try
 		{
 			if(info.status == ServiceStatus.RUNNING)
 			{
+				info.status = ServiceStatus.STOPPING;
+				log(info);
+				
 				service.stop();
 
 				info.status = ServiceStatus.STOPPED;
+				log(info);
 			}
 		}
 		catch(Exception e)
 		{
 			info.exception = e;
 			info.status = ServiceStatus.FAILED;
+			log(info);
 			
 			throw e;
 		}
-		
-		logger.info("Service stopped: {}", service);
 	}
 
 	public void startAll()
@@ -188,6 +189,11 @@ public class ServiceManagerImpl
 		return info;
 	}
 	
+	private void log(ServiceInfo info)
+	{
+		logger.info(info.toString());
+	}
+	
 	private static class ServiceInfoImpl
 		implements ServiceInfo
 	{
@@ -217,5 +223,10 @@ public class ServiceManagerImpl
 			return status;
 		}
 		
+		@Override
+		public String toString()
+		{
+			return String.format("[ %-8s ] %s", getStatus(), getService());
+		}
 	}
 }

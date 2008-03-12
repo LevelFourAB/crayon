@@ -28,8 +28,12 @@ public enum ServiceStatus
 	 * {@link ServiceManager}).
 	 */
 	UNKNOWN,
+	/** Service is stopping. */
+	STOPPING,
 	/** Service is stopped. */
 	STOPPED,
+	/** Service is starting. */
+	STARTING,
 	/** Service is running. */
 	RUNNING,
 	/** Service failed to start. */
