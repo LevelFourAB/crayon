@@ -35,12 +35,13 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
+import com.google.inject.Stage;
 
 import se.l4.crayon.annotation.Contribution;
 import se.l4.crayon.annotation.Dependencies;
 import se.l4.crayon.annotation.Description;
 import se.l4.crayon.internal.ClassLocator;
-import se.l4.crayon.internal.EntryPointModule;
+import se.l4.crayon.internal.InternalConfiguratorModule;
 import se.l4.crayon.internal.methods.MethodDef;
 import se.l4.crayon.internal.methods.MethodResolver;
 import se.l4.crayon.internal.methods.MethodResolverCallback;
@@ -104,21 +105,32 @@ public class Configurator
 	
 	private Injector injector;
 	
-	private EntryPointModule entryPointModule;
+	private InternalConfiguratorModule entryPointModule;
+	
+	private Environment environment;
 	
 	public Configurator()
 	{
-		configurationInjector = Guice.createInjector();
+		this(Environment.DEVELOPMENT);
+	}
+	
+	public Configurator(Environment environment)
+	{
+		this.environment = environment;
+		
+		configurationInjector = Guice.createInjector(
+			getStageFor(environment)
+		);
 	
 		modules = new HashSet<Class<?>>();
 		moduleInstances = new HashMap<Class<?>, Object>();
 		guiceModules = new LinkedList<Module>();
 		
 		// add default module
-		entryPointModule = new EntryPointModule(this);
-		modules.add(EntryPointModule.class);
+		entryPointModule = new InternalConfiguratorModule(this);
+		modules.add(InternalConfiguratorModule.class);
 		
-		moduleInstances.put(EntryPointModule.class, entryPointModule);
+		moduleInstances.put(InternalConfiguratorModule.class, entryPointModule);
 	}
 	
 	/**
@@ -170,11 +182,24 @@ public class Configurator
 		{
 			logger.info("Adding: {}", type);
 			addDependencies(type);
+			
+			if(environment == Environment.DEVELOPMENT)
+			{
+				checkModule(type);
+			}
 		}
 		
 		return this;
 	}
 	
+	/**
+	 * Add a module instance.
+	 * 
+	 * @param instance
+	 * 		instance to add
+	 * @return
+	 * 		self
+	 */
 	public Configurator addInstance(Object instance)
 	{
 		logger.info("Adding instance: {}", instance);
@@ -183,6 +208,11 @@ public class Configurator
 		
 		modules.add(instance.getClass());
 		addDependencies(instance.getClass());
+		
+		if(environment == Environment.DEVELOPMENT)
+		{
+			checkModule(instance.getClass());
+		}
 		
 		return this;
 	}
@@ -320,7 +350,11 @@ public class Configurator
 				}
 			}
 		});
-		injector = Guice.createInjector(guiceModules);
+		
+		injector = Guice.createInjector(
+			getStageFor(environment), 
+			guiceModules
+		);
 	}
 	
 	/**
@@ -405,6 +439,51 @@ public class Configurator
 	}
 	
 	/**
+	 * Translate environment to Guice {@link Stage}.
+	 * 
+	 * @param environment
+	 * 		environment to translate
+	 * @return
+	 * 		suitable Guice stage
+	 */
+	private Stage getStageFor(Environment environment)
+	{
+		return environment == Environment.PRODUCTION
+			? Stage.PRODUCTION
+			: Stage.DEVELOPMENT; 
+	}
+	
+	/**
+	 * Check a module for public methods that are not annotated with either
+	 * {@link Description} or {@link Contribution} and not inherited from 
+	 * {@link Object}. Will log a warning if such methods are found.
+	 * 
+	 * @param module
+	 * 		module to check
+	 */
+	private void checkModule(Class<?> module)
+	{
+		for(Method m  : module.getMethods())
+		{
+			if(m.isAnnotationPresent(Description.class)
+				|| m.isAnnotationPresent(Contribution.class))
+			{
+				continue;
+			}
+			
+			try
+			{
+				Object.class.getMethod(m.getName(), m.getParameterTypes());
+			}
+			catch(NoSuchMethodException e)
+			{
+				logger.warn("Found public non-annotated method in {}", module);
+				break;
+			}
+		}
+	}
+	
+	/**
 	 * Get the injector that has been created.
 	 * 
 	 * @return
@@ -414,4 +493,14 @@ public class Configurator
 		return injector;
 	}
 	
+	/**
+	 * Get the environment of the configurator.
+	 * 
+	 * @return
+	 * 		environment
+	 */
+	public Environment getEnvironment()
+	{
+		return environment;
+	}
 }

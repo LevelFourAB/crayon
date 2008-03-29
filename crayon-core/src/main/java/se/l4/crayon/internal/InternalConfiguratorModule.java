@@ -18,9 +18,8 @@ package se.l4.crayon.internal;
 import com.google.inject.Binder;
 
 import se.l4.crayon.Configurator;
-import se.l4.crayon.annotation.Contribution;
+import se.l4.crayon.Environment;
 import se.l4.crayon.annotation.Description;
-import se.l4.crayon.annotation.Order;
 
 /**
  * Module that is always loaded, containing the base configuration and bindings
@@ -29,20 +28,24 @@ import se.l4.crayon.annotation.Order;
  * @author Andreas Holstenson
  *
  */
-public class EntryPointModule
+public class InternalConfiguratorModule
 {
-	private Configurator entryPoint;
+	private Configurator configurator;
 	
-	public EntryPointModule(Configurator entryPoint)
+	public InternalConfiguratorModule(Configurator configurator)
 	{
-		this.entryPoint = entryPoint;
+		this.configurator = configurator;
 		
 	}
 	
 	@Description
 	public void configure(Binder binder)
 	{
-		// Reference to entry point
-		binder.bind(Configurator.class).toInstance(entryPoint);
+		// Reference to the configurator
+		binder.bind(Configurator.class).toInstance(configurator);
+		
+		// Bind the environment
+		Environment env = configurator.getEnvironment();
+		binder.bind(Environment.class).toInstance(env);
 	}
 }
