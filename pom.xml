@@ -69,7 +69,7 @@
 		<repository>
 			<id>crayon</id>
 			<name>Crayon Release Repository</name>
-			<url>http://svn.l4.se/crayon/repository/releases</url>
+			<url>http://crayon-java.googlecode.com/svn/repository/releases</url>
 			
 			<releases>
 				<enabled>true</enabled>
@@ -81,7 +81,7 @@
 		<repository>
 			<id>crayon</id>
 			<name>Crayon Snapshot Repository</name>
-			<url>http://svn.l4.se/crayon/repository/snapshots</url>
+			<url>http://crayon-java.googlecode.com/svn/repository/snapshots</url>
 
 			<releases>
 				<enabled>false</enabled>
@@ -94,7 +94,7 @@
 	
 	<!-- SCM -->
 	<scm>
-		<connection>scm:svn:http://svn.l4.se/crayon/trunk</connection>
+		<connection>scm:svn:http://crayon-java.googlecode.com/svn/trunk</connection>
 	</scm>
 
 	<build>
