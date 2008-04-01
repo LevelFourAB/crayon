@@ -91,29 +91,44 @@ import se.l4.crayon.internal.methods.MethodResolverCallback;
  */
 public class Configurator
 {
+	/** Manifest key used for default module discovery. */
 	public static final String MANIFEST_KEY = "System-Modules";
 	
+	/** Logger used within the configurator. */
 	private static final Logger logger = 
 		LoggerFactory.getLogger(Configurator.class);
 	
+	/** Environment that the configurator is working in. */
+	private Environment environment;
+
+	/** Injector used for creating module instances. */
 	private Injector configurationInjector;
 	
+	/** Map containing all the module instances. */
 	private Map<Class<?>, Object> moduleInstances;
+	/** Set with all the modules. */
 	private Set<Class<?>> modules;
 
+	/** List containing all the Guice modules. */
 	private List<Module> guiceModules;
 	
+	/** Injector created via {@link #configure()}. */
 	private Injector injector;
 	
-	private InternalConfiguratorModule entryPointModule;
-	
-	private Environment environment;
-	
+	/**
+	 * Create a configurator using {@link Environment#DEVELOPMENT}.
+	 * 
+	 */
 	public Configurator()
 	{
 		this(Environment.DEVELOPMENT);
 	}
 	
+	/**
+	 * Create a configurator in the given environment.
+	 * 
+	 * @param environment
+	 */
 	public Configurator(Environment environment)
 	{
 		this.environment = environment;
@@ -127,10 +142,10 @@ public class Configurator
 		guiceModules = new LinkedList<Module>();
 		
 		// add default module
-		entryPointModule = new InternalConfiguratorModule(this);
+		InternalConfiguratorModule internalModule = new InternalConfiguratorModule(this);
 		modules.add(InternalConfiguratorModule.class);
 		
-		moduleInstances.put(InternalConfiguratorModule.class, entryPointModule);
+		moduleInstances.put(InternalConfiguratorModule.class, internalModule);
 	}
 	
 	/**
@@ -217,6 +232,15 @@ public class Configurator
 		return this;
 	}
 	
+	/**
+	 * Add a Guice module to the configurator, see
+	 * {@link #addGuiceModule(Class)}.
+	 * 
+	 * @param module
+	 * 		module instance
+	 * @return
+	 * 		self
+	 */
 	public Configurator addGuiceModule(Module module)
 	{
 		logger.info("Adding Guice module: {}", module);
@@ -231,6 +255,16 @@ public class Configurator
 		return this;
 	}
 	
+	/**
+	 * Add a Guice module to the configurator, used for backwards compatibility
+	 * with projects that only utilize Guice. Such modules will not have the
+	 * added benefits of description ordering.
+	 * 
+	 * @param type
+	 * 		base class for Guice module
+	 * @return
+	 * 		self
+	 */
 	public Configurator addGuiceModule(Class<? extends Module> type)
 	{
 		Module m = configurationInjector.getInstance(type);
@@ -239,6 +273,16 @@ public class Configurator
 		return this;
 	}
 	
+	/**
+	 * Retrieve a module instance of {@code type}. Will use the 
+	 * {@link #configurationInjector} if the module has not yet been
+	 * instantiated.
+	 * 
+	 * @param type
+	 * 		type of module
+	 * @return
+	 * 		instance of module
+	 */
 	private Object getInstance(Class<?> type)
 	{
 		Object o = moduleInstances.get(type);
@@ -265,6 +309,11 @@ public class Configurator
 		performContributions();
 	}
 	
+	/**
+	 * Add all the dependencies of the given module.
+	 * 
+	 * @param type
+	 */
 	private void addDependencies(Class<?> type)
 	{
 		Dependencies deps = type.getAnnotation(Dependencies.class);
