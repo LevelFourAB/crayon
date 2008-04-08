@@ -11,7 +11,7 @@
 	<artifactId>crayon-core</artifactId>
 	<packaging>jar</packaging>
 	<name>crayon-core</name>
-  
+	
 	<build>
 		<plugins>
 			<plugin>
@@ -26,6 +26,13 @@
 		</plugins>
 	</build>
 
+	<repositories>
+		<repository>
+			<id>scannotation</id>
+			<url>http://scannotation.sf.net/maven2</url>
+		</repository>
+	</repositories>
+	
 	<dependencies>
 		<dependency>
 			<groupId>com.google.code.guice</groupId>
@@ -44,6 +51,19 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.4.3</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.scannotation</groupId>
+			<artifactId>scannotation</artifactId>
+			<version>1.0.2</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>javassist</groupId>
+			<artifactId>javassist</artifactId>
+			<version>3.6.0.GA</version>
+		</dependency>
+		
 		
 		<!--
 		<dependency>

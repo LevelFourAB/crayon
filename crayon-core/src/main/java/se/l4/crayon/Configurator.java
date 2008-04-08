@@ -149,36 +149,21 @@ public class Configurator
 	}
 	
 	/**
-	 * Attempt to discover modules stored in Jar-files and add them to the
-	 * configuration. Will use {@link #MANIFEST_KEY} for search.
+	 * Attempt to discover modules in the classpath by searching for classes
+	 * that have been annotated with {@link se.l4.crayon.annotation.Module}.
+	 * <b>Warning:</b> This only works if the classpath is set correctly and
+	 * it might take some time.
 	 * 
 	 * @return
 	 * 		self
 	 */
 	public Configurator discover()
 	{
-		return discover(MANIFEST_KEY);
-	}
-	
-	/**
-	 * Attempt to discover modules using a custom key, useful for application
-	 * frameworks.
-	 * 
-	 * @param manifestKey
-	 * 		manifest key to look in
-	 * @return
-	 */
-	public Configurator discover(String manifestKey)
-	{
-		logger.info("Attempting discovery with key: {}", manifestKey);
+		logger.info("Attempting to auto-discover modules");
 		
-		List<Class<Object>> modules = 
-			ClassLocator.getClassModules(Configurator.class.getClassLoader(),
-					Object.class, manifestKey);
-		
-		for(Class<Object> m : modules)
+		for(Class<?> c : ClassLocator.getAnnotated())
 		{
-			add(m);
+			add(c);
 		}
 		
 		return this;
@@ -301,6 +286,8 @@ public class Configurator
 	public void configure()
 	{
 		logger.info("Performing configuration and startup");
+		
+		
 		
 		// init descriptors
 		initModuleDescriptors();
