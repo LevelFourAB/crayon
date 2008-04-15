@@ -20,6 +20,7 @@ import com.google.inject.Scopes;
 
 import se.l4.crayon.annotation.Contribution;
 import se.l4.crayon.annotation.Description;
+import se.l4.crayon.annotation.Module;
 import se.l4.crayon.types.standard.BooleanLongConversion;
 import se.l4.crayon.types.standard.BooleanStringConversion;
 import se.l4.crayon.types.standard.ByteLongConversion;
@@ -48,6 +49,7 @@ import se.l4.crayon.types.standard.VoidStringConversion;
  * @author Andreas Holstenson
  *
  */
+@Module
 public class TypeConverterModule
 {
 	/**
