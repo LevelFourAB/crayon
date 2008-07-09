@@ -25,7 +25,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
+import com.google.inject.Injector;
+
+import se.l4.crayon.AnnotationIndex;
 
 /**
  * Implementation of {@link TypeConverter}, supports chaining of conversions
@@ -37,10 +43,16 @@ import com.google.inject.Inject;
 public class DefaultTypeConverter
 	implements TypeConverter
 {
+	private static final Logger logger 
+		= LoggerFactory.getLogger(DefaultTypeConverter.class);
+	
 	private Map<Class<?>, List<Conversion<?, ?>>> conversions;
 	private Map<CacheKey, Conversion<?, ?>> cache;
 	
 	private static Map<Class<?>, Class<?>> primitives;
+	
+	private Injector injector;
+	private boolean loaded;
 	
 	static
 	{
@@ -55,12 +67,19 @@ public class DefaultTypeConverter
 		primitives.put(void.class, Void.class);
 	}
 	
-	@Inject
 	public DefaultTypeConverter()
+	{
+		this(null);
+	}
+	
+	@Inject
+	public DefaultTypeConverter(Injector injector)
 	{
 		conversions = new HashMap<Class<?>, List<Conversion<?,?>>>();
 		
 		cache = new ConcurrentHashMap<CacheKey, Conversion<?,?>>();
+		
+		this.injector = injector;
 	}
 	
 	private List<Conversion<?, ?>> getListFor(Class<?> c)
@@ -314,6 +333,25 @@ public class DefaultTypeConverter
 			t = t * c + out.hashCode();
 			
 			return t;
+		}
+	}
+
+	public void autoLoadConverters()
+	{
+		logger.info("Using automatic conversion loading");
+		
+		if(injector != null && false == loaded)
+		{
+			AnnotationIndex index = injector.getInstance(AnnotationIndex.class);
+			
+			loaded = true;
+			
+			for(Class<Conversion> c : index.getAutoLoaded(Conversion.class))
+			{
+				logger.debug("Loading conversion {}", c);
+				
+				add(injector.getInstance(c));
+			}
 		}
 	}
 }

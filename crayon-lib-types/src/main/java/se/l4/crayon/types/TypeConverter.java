@@ -55,4 +55,6 @@ public interface TypeConverter
 	 * @return
 	 */
 	boolean canConvertBetween(Class<?> in, Class<?> out);
+	
+	void autoLoadConverters();
 }

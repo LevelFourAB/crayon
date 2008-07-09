@@ -17,6 +17,7 @@ package se.l4.crayon.internal;
 
 import com.google.inject.Binder;
 
+import se.l4.crayon.AnnotationIndex;
 import se.l4.crayon.Configurator;
 import se.l4.crayon.Environment;
 import se.l4.crayon.annotation.Description;
@@ -31,6 +32,7 @@ import se.l4.crayon.annotation.Description;
 public class InternalConfiguratorModule
 {
 	private Configurator configurator;
+	private AnnotationIndex idx;
 	
 	public InternalConfiguratorModule(Configurator configurator)
 	{
@@ -47,5 +49,20 @@ public class InternalConfiguratorModule
 		// Bind the environment
 		Environment env = configurator.getEnvironment();
 		binder.bind(Environment.class).toInstance(env);
+		
+		if(idx != null)
+		{
+			binder.bind(AnnotationIndex.class).toInstance(idx);
+			idx = null;
+		}
+		else
+		{
+			binder.bind(AnnotationIndex.class).to(AnnotationIndexImpl.class);
+		}
+	}
+	
+	public void bindAnnotationIndex(AnnotationIndex idx)
+	{
+		this.idx = idx;
 	}
 }

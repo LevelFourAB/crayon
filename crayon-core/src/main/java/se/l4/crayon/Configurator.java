@@ -15,6 +15,7 @@
  */
 package se.l4.crayon;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -40,7 +41,7 @@ import com.google.inject.Stage;
 import se.l4.crayon.annotation.Contribution;
 import se.l4.crayon.annotation.Dependencies;
 import se.l4.crayon.annotation.Description;
-import se.l4.crayon.internal.ClassLocator;
+import se.l4.crayon.internal.AnnotationIndexImpl;
 import se.l4.crayon.internal.InternalConfiguratorModule;
 import se.l4.crayon.internal.methods.MethodDef;
 import se.l4.crayon.internal.methods.MethodResolver;
@@ -108,10 +109,12 @@ public class Configurator
 	private Map<Class<?>, Object> moduleInstances;
 	/** Set with all the modules. */
 	private Set<Class<?>> modules;
-
+	
 	/** List containing all the Guice modules. */
 	private List<Module> guiceModules;
 	
+	/** Internal module used by configurator. */
+	private InternalConfiguratorModule internalModule;
 	/** Injector created via {@link #configure()}. */
 	private Injector injector;
 	
@@ -142,7 +145,7 @@ public class Configurator
 		guiceModules = new LinkedList<Module>();
 		
 		// add default module
-		InternalConfiguratorModule internalModule = new InternalConfiguratorModule(this);
+		internalModule = new InternalConfiguratorModule(this);
 		modules.add(InternalConfiguratorModule.class);
 		
 		moduleInstances.put(InternalConfiguratorModule.class, internalModule);
@@ -161,9 +164,19 @@ public class Configurator
 	{
 		logger.info("Attempting to auto-discover modules");
 		
-		for(Class<?> c : ClassLocator.getAnnotated())
+		try
 		{
-			add(c);
+			AnnotationIndex index = new AnnotationIndexImpl();
+			internalModule.bindAnnotationIndex(index);
+			
+			for(Class<?> c : index.loadAnnotatedClasses(se.l4.crayon.annotation.Module.class))
+			{
+				add(c);
+			}
+		}
+		catch(IOException e)
+		{
+			logger.error("Unable to get classes annotated with @Module;", e.getMessage());
 		}
 		
 		return this;
