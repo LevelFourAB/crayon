@@ -16,7 +16,10 @@
 package se.l4.crayon.services;
 
 /**
- * Information about a service in the system.
+ * Information about a service in the system, obtained via 
+ * {@link ServiceManager#getInfo(ManagedService)} or
+ * {@link ServiceManager#getInfo()}. The same service will always point to
+ * the same {@code ServiceInfo}.
  * 
  * @author Andreas Holstenson
  *
@@ -47,4 +50,22 @@ public interface ServiceInfo
 	 * 		exception that it failed with, or {@code null} if no failure
 	 */
 	Exception getFailedWith();
+	
+	/**
+	 * Add a service listener, will from now on be notified of status changes
+	 * in the service. Adds a hard reference, disallowing the listener from
+	 * being garbage collected.
+	 * 
+	 * @param listener
+	 */
+	void addListener(ServiceListener listener);
+	
+	/**
+	 * Remove a service listener, it will no longer be notified of changes
+	 * to the service this object represents.
+	 * 
+	 * @param listener
+	 * 		listener to remove
+	 */
+	void removeListener(ServiceListener listener);
 }

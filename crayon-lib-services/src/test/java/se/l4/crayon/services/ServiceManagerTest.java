@@ -24,8 +24,6 @@ import org.testng.annotations.Test;
 
 import com.google.inject.Injector;
 
-import se.l4.crayon.services.ManagedService;
-import se.l4.crayon.services.ServiceManager;
 import se.l4.crayon.services.internal.ServiceManagerImpl;
 
 /**

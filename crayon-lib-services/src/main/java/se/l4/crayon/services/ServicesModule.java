@@ -24,6 +24,7 @@ import com.google.inject.Binder;
 
 import se.l4.crayon.annotation.Contribution;
 import se.l4.crayon.annotation.Description;
+import se.l4.crayon.annotation.Module;
 import se.l4.crayon.annotation.Order;
 import se.l4.crayon.services.internal.ServiceManagerImpl;
 
@@ -34,6 +35,7 @@ import se.l4.crayon.services.internal.ServiceManagerImpl;
  * @author Andreas Holstenson
  *
  */
+@Module
 public class ServicesModule
 {
 	@Description

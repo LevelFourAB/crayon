@@ -81,6 +81,26 @@ public interface ServiceManager
 	void stopAll();
 	
 	/**
+	 * Report failure when running the given service, should <b>only</b> be
+	 * used from within a service to update the service manager about its
+	 * status.
+	 * 
+	 * @param service
+	 * 		service to report failure for
+	 */
+	void reportFailure(ManagedService service);
+	
+	/**
+	 * Report failure when running the given service, should <b>only</b> be
+	 * used from within a service to update the service manager about its
+	 * status.
+	 * 
+	 * @param service
+	 * @param e
+	 */
+	void reportFailure(ManagedService service, Exception e);
+	
+	/**
 	 * Get information about a certain service.
 	 * 
 	 * @param service
@@ -97,4 +117,22 @@ public interface ServiceManager
 	 * 		collection with service information
 	 */
 	Collection<ServiceInfo> getInfo();
+	
+	/**
+	 * Add a service listener, will from now on be notified of status changes
+	 * on all services. Adds a hard reference, disallowing the listener from
+	 * being garbage collected.
+	 * 
+	 * @param listener
+	 */
+	void addListener(ServiceListener listener);
+	
+	/**
+	 * Remove a service listener, it will no longer be notified of changes
+	 * to services.
+	 * 
+	 * @param listener
+	 * 		listener to remove
+	 */
+	void removeListener(ServiceListener listener);
 }
