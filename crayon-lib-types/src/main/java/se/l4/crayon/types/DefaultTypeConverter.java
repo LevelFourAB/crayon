@@ -190,12 +190,17 @@ public class DefaultTypeConverter
 				
 				for(Conversion<?, ?> possible : list)
 				{
+					if(tested.contains(possible))
+					{
+						continue;
+					}
+					
 					CompoundTypeConversion ctc = new CompoundTypeConversion(
 						tc, (Conversion<Object, Object>) possible
 					);
 					
 					queue.add((Conversion<I, O>) ctc);
-					tested.add((Conversion<I, O>) ctc);
+					tested.add((Conversion<I, O>) possible);
 				};
 			}
 		}
