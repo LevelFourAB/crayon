@@ -16,7 +16,6 @@
 		<module>crayon-lib-types</module>
 		<module>crayon-lib-error</module>
 		<module>crayon-lib-services</module>
-		<module>crayon-lib-persist</module>
 	</modules>
 
 	<!-- License -->
