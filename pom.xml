@@ -16,6 +16,8 @@
 		<module>crayon-lib-types</module>
 		<module>crayon-lib-error</module>
 		<module>crayon-lib-services</module>
+
+		<module>crayon-osgi</module>
 	</modules>
 
 	<!-- License -->

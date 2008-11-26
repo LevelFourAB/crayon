@@ -41,6 +41,7 @@ import com.google.inject.Stage;
 import se.l4.crayon.annotation.Contribution;
 import se.l4.crayon.annotation.Dependencies;
 import se.l4.crayon.annotation.Description;
+import se.l4.crayon.annotation.Shutdown;
 import se.l4.crayon.internal.AnnotationIndexImpl;
 import se.l4.crayon.internal.InternalConfiguratorModule;
 import se.l4.crayon.internal.methods.MethodDef;
@@ -96,8 +97,7 @@ public class Configurator
 	public static final String MANIFEST_KEY = "System-Modules";
 	
 	/** Logger used within the configurator. */
-	private static final Logger logger = 
-		LoggerFactory.getLogger(Configurator.class);
+	private Logger logger;
 	
 	/** Environment that the configurator is working in. */
 	private Environment environment;
@@ -149,6 +149,18 @@ public class Configurator
 		modules.add(InternalConfiguratorModule.class);
 		
 		moduleInstances.put(InternalConfiguratorModule.class, internalModule);
+		
+		logger = LoggerFactory.getLogger(Configurator.class);
+	}
+	
+	/**
+	 * Set the logger to use, useful for wrapping configurators.
+	 * 
+	 * @param logger
+	 */
+	public void setLogger(Logger logger)
+	{
+		this.logger = logger;
 	}
 	
 	/**
@@ -378,6 +390,7 @@ public class Configurator
 					
 					try
 					{
+						method.setAccessible(true);
 						method.invoke(object, params);
 					}
 					catch(IllegalArgumentException e)
@@ -414,28 +427,33 @@ public class Configurator
 		logger.debug("Performing contributions");
 		
 		MethodResolver resolver = new MethodResolver(Contribution.class,
-			new MethodResolverCallback()
-			{
-				public Object getInstance(Class<?> c)
+				new MethodResolverCallback()
 				{
-					return Configurator.this.getInstance(c);
-				}
+					public Object getInstance(Class<?> c)
+					{
+						return Configurator.this.getInstance(c);
+					}
 
-				public String getName(MethodDef def)
-				{
-					String s = 
-						def.getMethod()
-							.getAnnotation(Contribution.class)
-							.name();
-					
-					return "".equals(s) 
-						? def.getObject().getClass() + "-" + def.getMethod().getName()
-						: s;
+					public String getName(MethodDef def)
+					{
+						String s = 
+							def.getMethod()
+								.getAnnotation(Contribution.class)
+								.name();
+						
+						return "".equals(s) 
+							? def.getObject().getClass() + "-" + def.getMethod().getName()
+							: s;
+					}
+				
 				}
-			
-			}
-		);
+			);
 		
+		callMethods(resolver);
+	}
+	
+	private void callMethods(MethodResolver resolver)
+	{
 		for(Class<?> c : modules)
 		{
 			resolver.add(c);
@@ -515,7 +533,8 @@ public class Configurator
 		for(Method m  : module.getMethods())
 		{
 			if(m.isAnnotationPresent(Description.class)
-				|| m.isAnnotationPresent(Contribution.class))
+				|| m.isAnnotationPresent(Contribution.class)
+				|| m.isAnnotationPresent(Shutdown.class))
 			{
 				continue;
 			}
@@ -540,6 +559,39 @@ public class Configurator
 	public Injector getInjector()
 	{
 		return injector;
+	}
+	
+	/**
+	 * Perform shutdown of everything created by this configurator. Will call
+	 * methods annotated with {@link 
+	 */
+	public void shutdown()
+	{
+		logger.info("Shutting down");
+		
+		MethodResolver resolver = new MethodResolver(Shutdown.class,
+			new MethodResolverCallback()
+			{
+				public Object getInstance(Class<?> c)
+				{
+					return Configurator.this.getInstance(c);
+				}
+
+				public String getName(MethodDef def)
+				{
+					String s = 
+						def.getMethod()
+							.getAnnotation(Shutdown.class)
+							.name();
+					
+					return "".equals(s) 
+						? def.getObject().getClass() + "-" + def.getMethod().getName()
+						: s;
+				}
+			}
+		);
+		
+		callMethods(resolver);
 	}
 	
 	/**
