@@ -1,5 +1,7 @@
 package se.l4.crayon.osgi;
 
+import org.osgi.framework.BundleContext;
+
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;

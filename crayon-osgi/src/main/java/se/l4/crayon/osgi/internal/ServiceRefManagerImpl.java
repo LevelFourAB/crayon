@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceReference;
@@ -51,7 +52,7 @@ public class ServiceRefManagerImpl
 			
 			if(ref == null)
 			{
-				ref = new ServiceRefImpl<T>(ctx, type);
+				ref = new ServiceRefImpl<T>(ctx);
 				newRef = true;
 				refs.put(name, ref);
 			}
@@ -60,10 +61,19 @@ public class ServiceRefManagerImpl
 		
 		if(newRef)
 		{
-			ServiceReference sr = ctx.getServiceReference(name);
-			if(sr != null)
+			try
 			{
-				ref.setServiceReference(sr);
+				ServiceReference[] sr = ctx.getServiceReferences(name, null);
+				if(sr != null)
+				{
+					for(ServiceReference r : sr)
+					{
+						ref.addServiceReference(r);
+					}
+				}
+			}
+			catch(InvalidSyntaxException e)
+			{
 			}
 		}
 		
@@ -96,7 +106,7 @@ public class ServiceRefManagerImpl
 							ServiceRefImpl<?> ref = refs.get(s);
 							if(ref != null)
 							{
-								ref.setServiceReference(sr);
+								ref.addServiceReference(sr);
 							}
 						}
 					}
@@ -109,14 +119,12 @@ public class ServiceRefManagerImpl
 							ServiceRefImpl<?> ref = refs.get(s);
 							if(ref != null)
 							{
-								ref.setServiceReference(null);
+								ref.removeServiceReference(sr);
 							}
 						}
 					}
-					
+					break;
 			}
-			System.out.println("===");
-			
 		}
 		
 	}

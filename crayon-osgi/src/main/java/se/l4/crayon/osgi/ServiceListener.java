@@ -25,4 +25,12 @@ public interface ServiceListener<T>
 	 * @param service
 	 */
 	void serviceUnavailable(ServiceRef<T> service);
+	
+	/**
+	 * The service has been modified, either more or less instances are 
+	 * available or the preferred variant has changed.
+	 * 
+	 * @param service
+	 */
+	void serviceModified(ServiceRef<T> service, boolean preferredChanged);
 }

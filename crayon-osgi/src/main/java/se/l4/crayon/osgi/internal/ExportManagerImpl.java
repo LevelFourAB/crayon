@@ -30,7 +30,7 @@ public class ExportManagerImpl
 	private Map<Class<?>, ServiceRegistration> registrations;
 	
 	@Inject
-	private ExportManagerImpl(BundleContext ctx, Injector injector)
+	public ExportManagerImpl(BundleContext ctx, Injector injector)
 	{
 		this.ctx = ctx;
 		this.injector = injector;

@@ -59,7 +59,7 @@
 		<dependency>
 			<groupId>aopalliance</groupId>
 			<artifactId>aopalliance</artifactId>
-			<version>1.0</version>
+			<version>20081016</version>
 		</dependency>
 		
 		<dependency>

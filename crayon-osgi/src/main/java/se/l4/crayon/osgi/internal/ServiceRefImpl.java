@@ -1,5 +1,8 @@
 package se.l4.crayon.osgi.internal;
 
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -19,19 +22,28 @@ import se.l4.crayon.osgi.ServiceRef;
 public class ServiceRefImpl<T>
 	implements ServiceRef<T>
 {
+//	private static final Comparator<ServiceReference> COMPARATOR = 
+//		new Comparator<ServiceReference>()
+//		{
+//			public int compare(ServiceReference o1, ServiceReference o2)
+//			{
+//				return o1.
+//			};
+//		};
+		
 	private final BundleContext ctx;
-	private final Class<T> type;
 	private final CopyOnWriteArrayList<ServiceListener<T>> listeners;
 	private final AtomicInteger gets;
 	
-	private ServiceReference ref;
+//	private ServiceReference ref;
+	private final TreeSet<ServiceReference> refs;
 	
-	public ServiceRefImpl(BundleContext ctx, Class<T> type)
+	public ServiceRefImpl(BundleContext ctx)
 	{
 		this.ctx = ctx;
-		this.type = type;
 		
 		listeners = new CopyOnWriteArrayList<ServiceListener<T>>();
+		refs = new TreeSet<ServiceReference>();
 		gets = new AtomicInteger();
 	}
 
@@ -39,7 +51,7 @@ public class ServiceRefImpl<T>
 	{
 		if(listeners.addIfAbsent(listener))
 		{
-			if(ref != null)
+			if(refs.size() != 0)
 			{
 				listener.serviceAvailable(this);
 			}
@@ -55,9 +67,11 @@ public class ServiceRefImpl<T>
 	public T get()
 	{
 		// Try to get a service reference
-		if(ref == null)
+		ServiceReference ref;
+		
+		synchronized(refs)
 		{
-			ref = ctx.getServiceReference(type.getName());
+			ref = refs.last();
 		}
 		
 		if(ref != null)
@@ -68,36 +82,128 @@ public class ServiceRefImpl<T>
 		
 		return null;
 	}
+	
+	public Iterable<T> getAll()
+	{
+		return new Iterable<T>()
+		{
+			public Iterator<T> iterator()
+			{
+				return new Iterator<T>()
+				{
+					private Object[] refs = 
+						ServiceRefImpl.this.refs.toArray();
+					
+					private int index = 0;
+					
+					public boolean hasNext()
+					{
+						return index < refs.length;
+					}
+					
+					@SuppressWarnings("unchecked")
+					public T next()
+					{
+						ServiceReference ref = (ServiceReference) refs[index++];
+						
+						return (T) ctx.getService(ref);
+					}
+					
+					public void remove()
+					{
+					}
+				};
+			}
+		};
+	}
 
 	public boolean isAvailable()
 	{
-		return ref != null;
+		return false == refs.isEmpty();
 	}
 	
 	public void unget()
 	{
-		if(ref != null && gets.decrementAndGet() <= 0)
-		{
-			ctx.ungetService(ref);
-		}
+//		if(ref != null && gets.decrementAndGet() <= 0)
+//		{
+//			ctx.ungetService(ref);
+//		}
 	}
 	
-	public void setServiceReference(ServiceReference ref)
+	public void addServiceReference(ServiceReference ref)
 	{
-		this.ref = ref;
+		boolean highestModified;
+		boolean empty;
 		
-		if(ref == null)
+		synchronized(refs)
+		{
+			empty = refs.isEmpty();
+			
+			ServiceReference highest = empty ? null : refs.last();
+			refs.add(ref);
+			
+			highestModified = highest != refs.last();
+		}
+		
+		if(empty)
 		{
 			for(ServiceListener<T> l : listeners)
 			{
-				l.serviceUnavailable(this);
+				l.serviceAvailable(this);
+			}
+		}
+		else if(highestModified)
+		{
+			for(ServiceListener<T> l : listeners)
+			{
+				l.serviceModified(this, true);
 			}
 		}
 		else
 		{
 			for(ServiceListener<T> l : listeners)
 			{
-				l.serviceAvailable(this);
+				l.serviceModified(this, false);
+			}
+		}
+	}
+	
+	public void removeServiceReference(ServiceReference ref)
+	{
+		boolean highestModified;
+		boolean empty;
+		
+		synchronized(refs)
+		{
+			empty = refs.isEmpty();
+			
+			ServiceReference highest = empty ? null : refs.last();
+			refs.remove(ref);
+			
+			highestModified = highest != (empty ? null : refs.last());
+			
+			empty = refs.isEmpty();
+		}
+		
+		if(empty)
+		{
+			for(ServiceListener<T> l : listeners)
+			{
+				l.serviceUnavailable(this);
+			}
+		}
+		else if(highestModified)
+		{
+			for(ServiceListener<T> l : listeners)
+			{
+				l.serviceModified(this, true);
+			}
+		}
+		else
+		{
+			for(ServiceListener<T> l : listeners)
+			{
+				l.serviceModified(this, false);
 			}
 		}
 	}

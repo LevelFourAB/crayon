@@ -23,6 +23,14 @@ public interface ServiceRef<T>
 	T get();
 	
 	/**
+	 * Get all service instances that this reference knows about.
+	 * 
+	 * @return
+	 * 		iterable with all services
+	 */
+	Iterable<T> getAll();
+	
+	/**
 	 * Unget the service.
 	 */
 	void unget();
