@@ -1,5 +1,6 @@
 package se.l4.crayon.osgi.internal;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -9,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
+import se.l4.crayon.osgi.ServiceEvent;
 import se.l4.crayon.osgi.ServiceListener;
 import se.l4.crayon.osgi.ServiceRef;
 
@@ -83,6 +85,12 @@ public class ServiceRefImpl<T>
 		return null;
 	}
 	
+	@SuppressWarnings("unchecked")
+	public T get(ServiceReference ref)
+	{
+		return (T) ctx.getService(ref);
+	}
+	
 	public Iterable<T> getAll()
 	{
 		return new Iterable<T>()
@@ -94,17 +102,17 @@ public class ServiceRefImpl<T>
 					private Object[] refs = 
 						ServiceRefImpl.this.refs.toArray();
 					
-					private int index = 0;
+					private int index = refs.length-1;
 					
 					public boolean hasNext()
 					{
-						return index < refs.length;
+						return index >= 0;
 					}
 					
 					@SuppressWarnings("unchecked")
 					public T next()
 					{
-						ServiceReference ref = (ServiceReference) refs[index++];
+						ServiceReference ref = (ServiceReference) refs[index--];
 						
 						return (T) ctx.getService(ref);
 					}
@@ -117,6 +125,15 @@ public class ServiceRefImpl<T>
 		};
 	}
 
+	@Override
+	public ServiceReference[] getReferences()
+	{
+		synchronized(refs)
+		{
+			return refs.toArray(new ServiceReference[refs.size()]);
+		}
+	}
+	
 	public boolean isAvailable()
 	{
 		return false == refs.isEmpty();
@@ -152,19 +169,12 @@ public class ServiceRefImpl<T>
 				l.serviceAvailable(this);
 			}
 		}
-		else if(highestModified)
+
+		for(ServiceListener<T> l : listeners)
 		{
-			for(ServiceListener<T> l : listeners)
-			{
-				l.serviceModified(this, true);
-			}
-		}
-		else
-		{
-			for(ServiceListener<T> l : listeners)
-			{
-				l.serviceModified(this, false);
-			}
+			l.serviceModified(this, 
+				new ServiceEventImpl(ServiceEvent.Type.ADDED, ref, highestModified)
+			);
 		}
 	}
 	
@@ -180,9 +190,8 @@ public class ServiceRefImpl<T>
 			ServiceReference highest = empty ? null : refs.last();
 			refs.remove(ref);
 			
-			highestModified = highest != (empty ? null : refs.last());
-			
 			empty = refs.isEmpty();
+			highestModified = highest != (empty ? null : refs.last());
 		}
 		
 		if(empty)
@@ -192,19 +201,39 @@ public class ServiceRefImpl<T>
 				l.serviceUnavailable(this);
 			}
 		}
-		else if(highestModified)
+
+		for(ServiceListener<T> l : listeners)
 		{
-			for(ServiceListener<T> l : listeners)
-			{
-				l.serviceModified(this, true);
-			}
+			l.serviceModified(this, 
+				new ServiceEventImpl(ServiceEvent.Type.REMOVED, ref, highestModified)
+			);
 		}
-		else
+		
+//		ctx.ungetService(ref);
+	}
+	
+	public void updateServiceReference(ServiceReference ref)
+	{
+		boolean empty;
+		boolean highestModified;
+		
+		synchronized(refs)
 		{
-			for(ServiceListener<T> l : listeners)
-			{
-				l.serviceModified(this, false);
-			}
+			empty = refs.isEmpty();
+			
+			ServiceReference highest = empty ? null : refs.last();
+			
+			refs.remove(ref);
+			refs.add(ref);
+			
+			highestModified = highest != (empty ? null : refs.last());
+		}
+		
+		for(ServiceListener<T> l : listeners)
+		{
+			l.serviceModified(this, 
+				new ServiceEventImpl(ServiceEvent.Type.MODIFIED, ref, highestModified)
+			);
 		}
 	}
 }

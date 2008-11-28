@@ -1,5 +1,7 @@
 package se.l4.crayon.osgi;
 
+import org.osgi.framework.ServiceReference;
+
 
 /**
  * Mapping of a service imported from another OSGi bundle. Contains methods
@@ -23,6 +25,15 @@ public interface ServiceRef<T>
 	T get();
 	
 	/**
+	 * Get a specific instance based on a {@link ServiceReference}.
+	 * 
+	 * @param ref
+	 * 		reference to get instance for
+	 * @return
+	 */
+	T get(ServiceReference ref);
+	
+	/**
 	 * Get all service instances that this reference knows about.
 	 * 
 	 * @return
@@ -31,9 +42,17 @@ public interface ServiceRef<T>
 	Iterable<T> getAll();
 	
 	/**
-	 * Unget the service.
+	 * Get all service references.
+	 * 
+	 * @return
 	 */
-	void unget();
+	ServiceReference[] getReferences();
+	
+//	
+//	/**
+//	 * Unget the service.
+//	 */
+//	void unget();
 	
 	/**
 	 * Check if the service is currently available.

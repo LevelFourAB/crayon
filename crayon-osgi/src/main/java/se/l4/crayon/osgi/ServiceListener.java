@@ -32,5 +32,5 @@ public interface ServiceListener<T>
 	 * 
 	 * @param service
 	 */
-	void serviceModified(ServiceRef<T> service, boolean preferredChanged);
+	void serviceModified(ServiceRef<T> service, ServiceEvent event);
 }
