@@ -81,12 +81,12 @@
 			</snapshots>
 		</repository>
 		<repository>
-			<id>crayon</id>
+			<id>crayon-snapshots</id>
 			<name>Crayon Snapshot Repository</name>
 			<url>http://crayon-java.googlecode.com/svn/repository/snapshots</url>
 
 			<releases>
-				<enabled>false</enabled>
+				<enabled>true</enabled>
 			</releases>
 			<snapshots>
 				<enabled>true</enabled>
