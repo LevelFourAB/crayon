@@ -34,8 +34,8 @@ public class InternalServices
 	}
 	
 	@Shutdown
-	public void shutdown(ExportManager manager)
+	public void shutdown(ServiceRefManagerImpl manager)
 	{
-		manager.removeAll();
+		manager.shutdown();
 	}
 }

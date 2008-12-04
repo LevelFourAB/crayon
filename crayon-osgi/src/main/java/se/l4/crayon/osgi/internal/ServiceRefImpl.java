@@ -1,13 +1,11 @@
 package se.l4.crayon.osgi.internal;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
-import java.util.TreeSet;
+import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Filter;
 import org.osgi.framework.ServiceReference;
 
 import se.l4.crayon.osgi.ServiceEvent;
@@ -24,29 +22,21 @@ import se.l4.crayon.osgi.ServiceRef;
 public class ServiceRefImpl<T>
 	implements ServiceRef<T>
 {
-//	private static final Comparator<ServiceReference> COMPARATOR = 
-//		new Comparator<ServiceReference>()
-//		{
-//			public int compare(ServiceReference o1, ServiceReference o2)
-//			{
-//				return o1.
-//			};
-//		};
-		
 	private final BundleContext ctx;
 	private final CopyOnWriteArrayList<ServiceListener<T>> listeners;
-	private final AtomicInteger gets;
 	
-//	private ServiceReference ref;
-	private final TreeSet<ServiceReference> refs;
+	private final Filter filter;
+	private final TreeMap<ServiceReference, T> refs;
+	private final Class<T> type;
 	
-	public ServiceRefImpl(BundleContext ctx)
+	public ServiceRefImpl(BundleContext ctx, Filter filter, Class<T> type)
 	{
+		this.type = type;
 		this.ctx = ctx;
+		this.filter = filter;
 		
 		listeners = new CopyOnWriteArrayList<ServiceListener<T>>();
-		refs = new TreeSet<ServiceReference>();
-		gets = new AtomicInteger();
+		refs = new TreeMap<ServiceReference, T>();
 	}
 
 	public void addServiceListener(ServiceListener<T> listener)
@@ -65,24 +55,15 @@ public class ServiceRefImpl<T>
 		listeners.remove(listener);
 	}
 
-	@SuppressWarnings("unchecked")
 	public T get()
 	{
-		// Try to get a service reference
-		ServiceReference ref;
-		
+		// The last ServiceReference has priority
 		synchronized(refs)
 		{
-			ref = refs.last();
+			return refs.isEmpty()
+				? null
+				: refs.get(refs.lastKey());
 		}
-		
-		if(ref != null)
-		{
-			gets.incrementAndGet();
-			return (T) ctx.getService(ref);
-		}
-		
-		return null;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -99,10 +80,10 @@ public class ServiceRefImpl<T>
 			{
 				return new Iterator<T>()
 				{
-					private Object[] refs = 
-						ServiceRefImpl.this.refs.toArray();
+					private Object[] services = 
+						refs.values().toArray();
 					
-					private int index = refs.length-1;
+					private int index = services.length-1;
 					
 					public boolean hasNext()
 					{
@@ -112,9 +93,7 @@ public class ServiceRefImpl<T>
 					@SuppressWarnings("unchecked")
 					public T next()
 					{
-						ServiceReference ref = (ServiceReference) refs[index--];
-						
-						return (T) ctx.getService(ref);
+						return (T) services[index--];
 					}
 					
 					public void remove()
@@ -125,13 +104,18 @@ public class ServiceRefImpl<T>
 		};
 	}
 
-	@Override
 	public ServiceReference[] getReferences()
 	{
 		synchronized(refs)
 		{
-			return refs.toArray(new ServiceReference[refs.size()]);
+			return refs.keySet()
+				.toArray(new ServiceReference[refs.size()]);
 		}
+	}
+	
+	public Filter getFilter()
+	{
+		return filter;
 	}
 	
 	public boolean isAvailable()
@@ -139,12 +123,15 @@ public class ServiceRefImpl<T>
 		return false == refs.isEmpty();
 	}
 	
-	public void unget()
+	public void shutdown()
 	{
-//		if(ref != null && gets.decrementAndGet() <= 0)
-//		{
-//			ctx.ungetService(ref);
-//		}
+		synchronized(refs)
+		{
+			for(ServiceReference ref : refs.keySet())
+			{
+				ctx.ungetService(ref);
+			}
+		}
 	}
 	
 	public void addServiceReference(ServiceReference ref)
@@ -152,14 +139,22 @@ public class ServiceRefImpl<T>
 		boolean highestModified;
 		boolean empty;
 		
+		if(false == ref.isAssignableTo(ctx.getBundle(), type.getName()))
+		{
+			return;
+		}
+		
+		@SuppressWarnings("unchecked")
+		T object = (T) ctx.getService(ref);
+		
 		synchronized(refs)
 		{
 			empty = refs.isEmpty();
 			
-			ServiceReference highest = empty ? null : refs.last();
-			refs.add(ref);
+			ServiceReference highest = empty ? null : refs.lastKey();
+			refs.put(ref, object);
 			
-			highestModified = highest != refs.last();
+			highestModified = highest != refs.lastKey();
 		}
 		
 		if(empty)
@@ -182,16 +177,17 @@ public class ServiceRefImpl<T>
 	{
 		boolean highestModified;
 		boolean empty;
+		boolean removed;
 		
 		synchronized(refs)
 		{
 			empty = refs.isEmpty();
 			
-			ServiceReference highest = empty ? null : refs.last();
-			refs.remove(ref);
+			ServiceReference highest = empty ? null : refs.lastKey();
+			removed = refs.remove(ref) != null;
 			
 			empty = refs.isEmpty();
-			highestModified = highest != (empty ? null : refs.last());
+			highestModified = highest != (empty ? null : refs.lastKey());
 		}
 		
 		if(empty)
@@ -209,7 +205,10 @@ public class ServiceRefImpl<T>
 			);
 		}
 		
-//		ctx.ungetService(ref);
+		if(removed)
+		{
+			ctx.ungetService(ref);
+		}
 	}
 	
 	public void updateServiceReference(ServiceReference ref)
@@ -221,12 +220,18 @@ public class ServiceRefImpl<T>
 		{
 			empty = refs.isEmpty();
 			
-			ServiceReference highest = empty ? null : refs.last();
+			ServiceReference highest = empty ? null : refs.lastKey();
 			
-			refs.remove(ref);
-			refs.add(ref);
+			if(refs.remove(ref) != null)
+			{
+				ctx.ungetService(ref);
+			}
 			
-			highestModified = highest != (empty ? null : refs.last());
+			@SuppressWarnings("unchecked")
+			T object = (T) ctx.getService(ref);
+			refs.put(ref, object);
+			
+			highestModified = highest != (empty ? null : refs.lastKey());
 		}
 		
 		for(ServiceListener<T> l : listeners)

@@ -1,13 +1,14 @@
 package se.l4.crayon.osgi;
 
-import org.osgi.framework.BundleContext;
+import org.osgi.framework.Filter;
 
+import se.l4.crayon.osgi.internal.ServiceImportBuilderImpl;
+
+import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 import com.google.inject.util.Types;
-
-import se.l4.crayon.osgi.internal.ServiceImportBuilderImpl;
 
 /**
  * OSGi services for use with {@link OSGiConfigurator}.
@@ -49,7 +50,7 @@ public final class OSGi
 	 * 		type literal matching the servjce
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> TypeLiteral<ServiceRef<T>> ref(Class<T> service)
+	public static <T> TypeLiteral<ServiceRef<T>> typeRef(Class<T> service)
 	{
 		return (TypeLiteral<ServiceRef<T>>) TypeLiteral.get(
 			Types.newParameterizedType(ServiceRef.class, service)
@@ -64,7 +65,12 @@ public final class OSGi
 	 * @param service
 	 * @return
 	 */
-	public static <T> Provider<? extends ServiceRef<T>> importServiceRef(final Class<T> service)
+	public static <T> Provider<? extends ServiceRef<T>> importRef(final Class<T> service)
+	{
+		return importRef(service, null);
+	}
+	
+	public static <T> Provider<? extends ServiceRef<T>> importRef(final Class<T> service, final Filter filter)
 	{
 		return new Provider<ServiceRef<T>>()
 		{
@@ -73,8 +79,18 @@ public final class OSGi
 			
 			public ServiceRef<T> get()
 			{
-				return manager.get(service);
+				return manager.get(service, filter);
 			}
 		};
+	}
+	
+	public static <T> void bindServiceRef(Binder binder, Class<T> service)
+	{
+		bindServiceRef(binder, service, null);
+	}
+	
+	public static <T> void bindServiceRef(Binder binder, Class<T> service, Filter filter)
+	{
+		binder.bind(typeRef(service)).toProvider(importRef(service, filter));
 	}
 }

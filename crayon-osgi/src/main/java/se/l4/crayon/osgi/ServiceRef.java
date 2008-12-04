@@ -1,5 +1,6 @@
 package se.l4.crayon.osgi;
 
+import org.osgi.framework.Filter;
 import org.osgi.framework.ServiceReference;
 
 
@@ -47,6 +48,15 @@ public interface ServiceRef<T>
 	 * @return
 	 */
 	ServiceReference[] getReferences();
+	
+	/**
+	 * Get the filter used for this service, may be {@code null} if no filter
+	 * is used.
+	 * 
+	 * @return
+	 * 		filter used, {@code null} if no filter is used
+	 */
+	Filter getFilter();
 	
 //	
 //	/**

@@ -1,9 +1,9 @@
 package se.l4.crayon.osgi.internal;
 
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -25,22 +25,46 @@ public class ExportManagerImpl
 	implements ExportManager
 {
 	private BundleContext ctx;
-	private Injector injector;
-	
-	private Map<Class<?>, ServiceRegistration> registrations;
+	private Injector injector; 
 	
 	@Inject
 	public ExportManagerImpl(BundleContext ctx, Injector injector)
 	{
 		this.ctx = ctx;
 		this.injector = injector;
-		
-		registrations = new ConcurrentHashMap<Class<?>, ServiceRegistration>();
 	}
 	
-	public <T> void export(Class<T> type)
+	public <T> ServiceRegistration export(Class<T> type)
+	{
+		return export(type, (Map<String, Object>) null);
+	}
+	
+	@Override
+	public <T> ServiceRegistration export(Class<T> type, String... attributes)
+	{
+		if(attributes.length % 2 != 0)
+		{
+			throw new IllegalArgumentException("attributes must be given in pairs of key and value");
+		}
+		
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		for(int i=0, n=attributes.length; i<n; i+=2)
+		{
+			result.put(attributes[i], attributes[i+1]);
+		}
+		
+		return export(type, result);
+	}
+	
+	@Override
+	public <T> ServiceRegistration export(Class<T> type, Map<String, Object> attributes) 
 	{
 		Hashtable<String, Object> t = new Hashtable<String, Object>();
+		if(attributes != null)
+		{
+			t.putAll(attributes);
+		}
 		
 		final Provider<T> provider = injector.getProvider(type);
 		ServiceFactory factory = new ServiceFactory()
@@ -58,27 +82,40 @@ public class ExportManagerImpl
 			
 		};
 		
-		ServiceRegistration reg = ctx.registerService(type.getName(), factory, t);
-		registrations.put(type, reg);
+		return ctx.registerService(type.getName(), factory, t);
 	}
 	
-	public <T> void remove(Class<T> type)
+	public <T> ServiceRegistration export(T object, Map<String, Object> attributes,
+			Class<?>... types) 
 	{
-		ServiceRegistration reg = registrations.remove(type);
-		if(reg != null)
+		Hashtable<String, Object> t = new Hashtable<String, Object>();
+		if(attributes != null)
 		{
-			reg.unregister();
-		}
-	}
-
-	public void removeAll()
-	{
-		for(ServiceRegistration reg : registrations.values())
-		{
-			reg.unregister();
+			t.putAll(attributes);
 		}
 		
-		registrations.clear();
+		Class<?> objClass = object.getClass();
+		String[] classes = new String[types.length];
+		for(int i=0, n=classes.length; i<n; i++)
+		{
+			Class<?> c = types[i];
+			if(false == c.isAssignableFrom(objClass))
+			{
+				throw new IllegalArgumentException("Unable to export as " + c + ", it is not compatible with " + objClass);
+			}
+			
+			classes[i] = c.getName();
+		}
+		
+		return ctx.registerService(classes, object, t);
+	}
+	
+	public <T> void remove(ServiceRegistration registration)
+	{
+		if(registration != null)
+		{
+			registration.unregister();
+		}
 	}
 
 	/**
@@ -112,4 +149,6 @@ public class ExportManagerImpl
 			}
 		}
 	}
+
+	
 }
