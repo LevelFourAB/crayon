@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Crayon OSGi Remoting
+Bundle-SymbolicName: se.l4.crayon.osgi.remoting
+Bundle-Activator: se.l4.crayon.osgi.remoting.internal.RemoteBundleActivator
+Bundle-Version: 0.3
+Import-Package: org.osgi.framework;version="1.3.0",
+ org.osgi.util.tracker,
+ org.objectweb.asm,
+ org.objectweb.asm.commons
+Export-Package: se.l4.crayon.osgi.remoting;version="0.3"
