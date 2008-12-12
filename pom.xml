@@ -18,6 +18,8 @@
 		<module>crayon-lib-services</module>
 
 		<module>crayon-osgi</module>
+		<module>crayon-osgi-remoting</module>
+		<module>crayon-osgi-tooling</module>
 	</modules>
 
 	<!-- License -->
