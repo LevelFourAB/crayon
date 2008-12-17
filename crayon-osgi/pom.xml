@@ -31,11 +31,26 @@
 
 				<configuration>
 					<archive>
-						<manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
+						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
 					</archive>
 				</configuration>
 
 			</plugin>
+			
+			<plugin>
+        		<groupId>se.l4.crayon</groupId>
+        		<artifactId>maven-osgi-plugin</artifactId>
+        		<version>0.3-SNAPSHOT</version>
+        		
+        		<executions>
+					<execution>
+						<goals>
+							<goal>process</goal>
+						</goals>
+					</execution>
+				</executions>
+      		</plugin>
+      		
 		</plugins>
 	</build>
 
@@ -44,6 +59,18 @@
 			<groupId>${project.groupId}</groupId>
 			<artifactId>crayon-core</artifactId>
 			<version>${project.version}</version>
+			
+			<exclusions>
+				<exclusion>
+					<groupId>org.scannotation</groupId>
+					<artifactId>scannotation</artifactId>
+				</exclusion>
+				
+				<exclusion>
+					<groupId>javassist</groupId>
+					<artifactId>javassist</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		
 		<dependency>

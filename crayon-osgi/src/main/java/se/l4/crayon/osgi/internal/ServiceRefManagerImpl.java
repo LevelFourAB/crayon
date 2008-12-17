@@ -12,11 +12,11 @@ import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceReference;
 
-import se.l4.crayon.osgi.ServiceRef;
-import se.l4.crayon.osgi.ServiceRefManager;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import se.l4.crayon.osgi.ServiceRef;
+import se.l4.crayon.osgi.ServiceRefManager;
 
 /**
  * Manager of service references.
@@ -115,7 +115,6 @@ public class ServiceRefManagerImpl
 		ref.addServiceListener(listener);
 	}
 	
-	@Override
 	public <T> void addServiceListener(Class<T> type, Filter filter,
 			se.l4.crayon.osgi.ServiceListener<T> listener) 
 	{

@@ -5,9 +5,6 @@ import java.io.File;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
-import se.l4.crayon.osgi.tooling.core.FailException;
-import se.l4.crayon.osgi.tooling.core.ManifestGenerator;
-
 public class ManifestTask
 	extends Task
 {
@@ -26,17 +23,17 @@ public class ManifestTask
 	public void execute()
 		throws BuildException 
 	{
-		ManifestGenerator generator = new ManifestGenerator();
-		TaskLogger logger = new TaskLogger(this);
-		
-		try
-		{
-			generator.generate(logger, xml, manifest, embedXml, embedXmlLocation);
-		}
-		catch(FailException e)
-		{
-			throw new BuildException(e.getMessage());
-		}
+//		BundleProcessor generator = new BundleProcessor();
+//		TaskLogger logger = new TaskLogger(this);
+//		
+//		try
+//		{
+//			generator.generate(logger, xml, manifest, embedXml, embedXmlLocation, new File[0]);
+//		}
+//		catch(FailException e)
+//		{
+//			throw new BuildException(e.getMessage());
+//		}
 	}
 	
 	public File getXml()

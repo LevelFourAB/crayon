@@ -25,15 +25,28 @@
 			</plugin>
 			
 			<plugin>
+        		<groupId>se.l4.crayon</groupId>
+        		<artifactId>maven-osgi-plugin</artifactId>
+        		<version>0.3-SNAPSHOT</version>
+        		
+        		<executions>
+					<execution>
+						<goals>
+							<goal>process</goal>
+						</goals>
+					</execution>
+				</executions>
+      		</plugin>
+      		
+      		<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 
 				<configuration>
 					<archive>
-						<manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
+						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
 					</archive>
 				</configuration>
-
 			</plugin>
 		</plugins>
 	</build>

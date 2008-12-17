@@ -1,0 +1,23 @@
+<bundle>
+	<name>Crayon</name>
+	<symbolicName>se.l4.crayon</symbolicName>
+	<version>0.3.0</version>
+
+	<website>http://crayon-java.googlecode.com</website>
+
+	<description>
+		Crayon is an extension library for Guice with life cycle support.
+	</description>
+
+	<requires>
+		<package name="*" />
+		
+		<package name="org.scannotation" resolution="optional" />
+	</requires>
+
+	<provides>
+		<package name="se.l4.crayon.*" version="${version}" />
+		
+		<package name="se.l4.crayon.internal.*" private="true" />
+	</provides>
+</bundle>

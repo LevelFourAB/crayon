@@ -1,0 +1,24 @@
+<bundle>
+	<name>Crayon OSGi Remoting</name>
+	<symbolicName>se.l4.crayon.osgi.remoting</symbolicName>
+	<version>0.3.0</version>
+
+	<website>http://crayon-java.googlecode.com</website>
+	
+	<activator>se.l4.crayon.osgi.remoting.internal.RemoteBundleActivator</activator>
+
+	<description>
+		Remote OSGi support.
+	</description>
+
+	<requires>
+		<package name="*" />
+	</requires>
+
+	<provides>
+		<package name="se.l4.crayon.osgi.remoting.*" version="${version}" />
+		
+		<package name="se.l4.crayon.osgi.remoting.internal.*" private="true" />
+	</provides>
+	
+</bundle>

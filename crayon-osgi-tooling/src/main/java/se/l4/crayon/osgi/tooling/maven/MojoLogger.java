@@ -4,6 +4,12 @@ import org.apache.maven.plugin.logging.Log;
 
 import se.l4.crayon.osgi.tooling.core.Logger;
 
+/**
+ * Logger implementation over the logging within Maven.
+ * 
+ * @author Andreas Holstenson
+ *
+ */
 public class MojoLogger
 	implements Logger
 {

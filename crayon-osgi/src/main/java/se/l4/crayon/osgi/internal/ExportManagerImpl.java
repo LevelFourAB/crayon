@@ -10,15 +10,15 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
 
-import se.l4.crayon.osgi.Export;
-import se.l4.crayon.osgi.ExportManager;
-
 import com.google.inject.Binding;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
+
+import se.l4.crayon.osgi.Export;
+import se.l4.crayon.osgi.ExportManager;
 
 @Singleton
 public class ExportManagerImpl
@@ -39,7 +39,6 @@ public class ExportManagerImpl
 		return export(type, (Map<String, Object>) null);
 	}
 	
-	@Override
 	public <T> ServiceRegistration export(Class<T> type, String... attributes)
 	{
 		if(attributes.length % 2 != 0)
@@ -57,7 +56,6 @@ public class ExportManagerImpl
 		return export(type, result);
 	}
 	
-	@Override
 	public <T> ServiceRegistration export(Class<T> type, Map<String, Object> attributes) 
 	{
 		Hashtable<String, Object> t = new Hashtable<String, Object>();

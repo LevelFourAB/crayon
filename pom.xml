@@ -12,14 +12,18 @@
 	<packaging>pom</packaging>
 
 	<modules>
+		<!-- compile maven plugins first -->
+		<module>crayon-osgi-tooling</module>
+
+		<!-- standard modules -->
 		<module>crayon-core</module>
 		<module>crayon-lib-types</module>
 		<module>crayon-lib-error</module>
 		<module>crayon-lib-services</module>
 
+		<!-- OSGi support -->
 		<module>crayon-osgi</module>
 		<module>crayon-osgi-remoting</module>
-		<module>crayon-osgi-tooling</module>
 	</modules>
 
 	<!-- License -->
