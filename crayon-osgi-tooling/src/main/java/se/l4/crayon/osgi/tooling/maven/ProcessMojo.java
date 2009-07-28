@@ -110,6 +110,12 @@ public class ProcessMojo
 	public void execute()
 		throws MojoExecutionException, MojoFailureException
 	{
+		if(project.getPackaging().equals("pom"))
+		{
+			// Abort if this is a POM
+			return;
+		}
+		
 		BundleProcessor processor = new BundleProcessor(new MojoLogger(getLog()));
 		
 		// Set the values that are needed
