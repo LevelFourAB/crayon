@@ -3,11 +3,11 @@ package se.l4.crayon.osgi;
 import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
 
-import se.l4.crayon.Configurator;
-import se.l4.crayon.osgi.internal.InternalServices;
-
 import com.google.inject.Injector;
 import com.google.inject.Module;
+
+import se.l4.crayon.Configurator;
+import se.l4.crayon.osgi.internal.InternalServices;
 
 /**
  * Configurator class used for OSGi bundles. Usage is the same as with
@@ -70,9 +70,11 @@ public class OSGiConfigurator
 		return this;
 	}
 
-	public void configure()
+	public OSGiConfigurator configure()
 	{
 		configurator.configure();
+		
+		return this;
 	}
 	
 	public void shutdown()

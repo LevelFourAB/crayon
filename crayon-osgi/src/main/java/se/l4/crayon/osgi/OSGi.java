@@ -2,13 +2,13 @@ package se.l4.crayon.osgi;
 
 import org.osgi.framework.Filter;
 
-import se.l4.crayon.osgi.internal.ServiceImportBuilderImpl;
-
 import com.google.inject.Binder;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.TypeLiteral;
 import com.google.inject.util.Types;
+
+import se.l4.crayon.osgi.internal.ServiceImportBuilderImpl;
 
 /**
  * OSGi services for use with {@link OSGiConfigurator}.

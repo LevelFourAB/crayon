@@ -64,6 +64,22 @@ public interface ExportManager
 	<T> ServiceRegistration export(Class<T> type, String... properties);
 	
 	/**
+	 * Export an object instance, but with zero properties. Otherwise the
+	 * same as {@link #export(Object, Map, Class...)}.
+	 * 
+	 * @param <T>
+	 * 		type
+	 * @param object
+	 * 		object to export
+	 * @param types
+	 * 		array of types that the service should be exported as
+	 * @return
+	 * 		object that represents the registered service, can be used to
+	 * 		update the service properties and to unregister the service.
+	 */
+	<T> ServiceRegistration export(T object, Class<?>... types);
+	
+	/**
 	 * Export an object instance, also defines its properties and the types
 	 * it should be export as.
 	 * 

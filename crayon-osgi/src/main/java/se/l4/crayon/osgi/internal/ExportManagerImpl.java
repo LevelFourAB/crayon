@@ -1,6 +1,7 @@
 package se.l4.crayon.osgi.internal;
 
 import java.lang.reflect.Type;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -81,6 +82,12 @@ public class ExportManagerImpl
 		};
 		
 		return ctx.registerService(type.getName(), factory, t);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <T> ServiceRegistration export(T object, Class<?>... types) 
+	{
+		return export(object, Collections.EMPTY_MAP, types);
 	}
 	
 	public <T> ServiceRegistration export(T object, Map<String, Object> attributes,
