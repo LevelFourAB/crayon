@@ -56,8 +56,9 @@ public class MethodResolver
 		classes = new HashSet<Class<?>>();
 	}
 	
-	public void add(Class<?> type)
+	public void add(Object instance)
 	{
+		Class<?> type = instance.getClass();
 		// Do nothing if the class is already added
 		if(false == classes.add(type))
 		{
@@ -65,8 +66,6 @@ public class MethodResolver
 		}
 		
 		// Otherwise create an instance and loop through methods
-		Object object = callback.getInstance(type);
-		
 		Method[] declared = type.getMethods();
 		List<MethodDef> defs = getMethodDefs(type);
 		
@@ -77,7 +76,7 @@ public class MethodResolver
 				continue;
 			}
 			
-			MethodDef def = new MethodDef(object, m);
+			MethodDef def = new MethodDef(instance, m);
 			String name = callback.getName(def);
 
 			// Store the definition

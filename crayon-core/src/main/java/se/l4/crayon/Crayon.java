@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Andreas Holstenson
+ * Copyright 2009 Andreas Holstenson
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.l4.crayon.annotation;
+package se.l4.crayon;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import se.l4.crayon.Configurator;
+import com.google.inject.Injector;
 
 /**
- * Define that a class is actually a module and can be loaded by the
- * {@link Configurator}. Usually used together with 
- * {@link Configurator#discover()}.
+ * Main class for interacting with Crayon after the {@link Injector} has been
+ * created.
  * 
  * @author Andreas Holstenson
  *
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface Module
+public interface Crayon
 {
+	/**
+	 * Perform registered shutdown actions.
+	 */
+	void shutdown();
 }

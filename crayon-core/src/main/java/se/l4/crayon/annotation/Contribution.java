@@ -21,12 +21,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import se.l4.crayon.Configurator;
-
 /**
  * Annotation used for marking a method that it should be run as part of the
  * contribution process of a module. Methods that are marked need to be
- * public. See {@link Configurator} for more information.
+ * public.
+ * 
+ * <p>
+ * A method annotated will receive all of its parameters by means of injection
+ * via Guice.
  * 
  * @author Andreas Holstenson
  *

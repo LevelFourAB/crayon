@@ -15,38 +15,24 @@
  */
 package se.l4.crayon;
 
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Binder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Stage;
 
 import se.l4.crayon.annotation.Contribution;
-import se.l4.crayon.annotation.Dependencies;
 import se.l4.crayon.annotation.Description;
 import se.l4.crayon.annotation.Shutdown;
-import se.l4.crayon.internal.AnnotationIndexImpl;
 import se.l4.crayon.internal.InternalConfiguratorModule;
-import se.l4.crayon.internal.methods.MethodDef;
-import se.l4.crayon.internal.methods.MethodResolver;
-import se.l4.crayon.internal.methods.MethodResolverCallback;
+import se.l4.crayon.internal.WrapperModule;
 
 /**
  * Entry point for system, used for defining which modules should be used and
@@ -102,16 +88,8 @@ public class Configurator
 	/** Environment that the configurator is working in. */
 	private Environment environment;
 
-	/** Injector used for creating module instances. */
-	private Injector configurationInjector;
-	
-	/** Map containing all the module instances. */
-	private Map<Class<?>, Object> moduleInstances;
-	/** Set with all the modules. */
-	private Set<Class<?>> modules;
-	
 	/** List containing all the Guice modules. */
-	private List<Module> guiceModules;
+	private List<Object> modules;
 	
 	/** Internal module used by configurator. */
 	private InternalConfiguratorModule internalModule;
@@ -136,19 +114,11 @@ public class Configurator
 	{
 		this.environment = environment;
 		
-		configurationInjector = Guice.createInjector(
-			getStageFor(environment)
-		);
-	
-		modules = new HashSet<Class<?>>();
-		moduleInstances = new HashMap<Class<?>, Object>();
-		guiceModules = new LinkedList<Module>();
+		modules = new LinkedList<Object>();
 		
 		// add default module
 		internalModule = new InternalConfiguratorModule(this);
-		modules.add(InternalConfiguratorModule.class);
-		
-		moduleInstances.put(InternalConfiguratorModule.class, internalModule);
+		modules.add(internalModule);
 		
 		logger = LoggerFactory.getLogger(Configurator.class);
 	}
@@ -164,53 +134,21 @@ public class Configurator
 	}
 	
 	/**
-	 * Attempt to discover modules in the classpath by searching for classes
-	 * that have been annotated with {@link se.l4.crayon.annotation.Module}.
-	 * <b>Warning:</b> This only works if the classpath is set correctly and
-	 * it might take some time.
+	 * Add a module to the configurator.
 	 * 
-	 * @return
-	 * 		self
-	 */
-	public Configurator discover()
-	{
-		logger.info("Attempting to auto-discover modules");
-		
-		try
-		{
-			AnnotationIndex index = new AnnotationIndexImpl();
-			internalModule.bindAnnotationIndex(index);
-			
-			for(Class<?> c : index.loadAnnotatedClasses(se.l4.crayon.annotation.Module.class))
-			{
-				add(c);
-			}
-		}
-		catch(IOException e)
-		{
-			logger.error("Unable to get classes annotated with @Module;", e.getMessage());
-		}
-		
-		return this;
-	}
-	
-	/**
-	 * Add a module to the configuration. The module will be automatically
-	 * instantiated and configured.
-	 * 
-	 * @param type
+	 * @param instance
 	 * @return
 	 */
-	public Configurator add(Class<?> type)
+	public Configurator add(Object instance)
 	{
-		if(modules.add(type))
+		if(modules.add(instance))
 		{
-			logger.info("Adding: {}", type);
-			addDependencies(type);
+			logger.info("Adding: {}", instance);
 			
 			if(environment == Environment.DEVELOPMENT)
 			{
-				checkModule(type);
+				checkModule(instance instanceof Class
+					? (Class) instance : instance.getClass());
 			}
 		}
 		
@@ -224,20 +162,13 @@ public class Configurator
 	 * 		instance to add
 	 * @return
 	 * 		self
+	 * @deprecated
+	 * 		use @{link {@link #add(Object)}} instead
 	 */
+	@Deprecated
 	public Configurator addInstance(Object instance)
 	{
-		logger.info("Adding instance: {}", instance);
-		
-		moduleInstances.put(instance.getClass(), instance);
-		
-		modules.add(instance.getClass());
-		addDependencies(instance.getClass());
-		
-		if(environment == Environment.DEVELOPMENT)
-		{
-			checkModule(instance.getClass());
-		}
+		add(instance);
 		
 		return this;
 	}
@@ -250,17 +181,15 @@ public class Configurator
 	 * 		module instance
 	 * @return
 	 * 		self
+	 * @deprecated
+	 * 		use {@link #add(Object)} instead
 	 */
+	@Deprecated
 	public Configurator addGuiceModule(Module module)
 	{
-		logger.info("Adding Guice module: {}", module);
+		logger.info("Adding: {}", module);
 		
-		guiceModules.add(module);
-		
-		moduleInstances.put(module.getClass(), module);
-		
-		modules.add(module.getClass());
-		addDependencies(module.getClass());
+		modules.add(module);
 		
 		return this;
 	}
@@ -274,35 +203,15 @@ public class Configurator
 	 * 		base class for Guice module
 	 * @return
 	 * 		self
+	 * @deprecated
+	 * 		use {@link #add(Object)} instead
 	 */
+	@Deprecated
 	public Configurator addGuiceModule(Class<? extends Module> type)
 	{
-		Module m = configurationInjector.getInstance(type);
-		addGuiceModule(m);
+		addGuiceModule(type);
 		
 		return this;
-	}
-	
-	/**
-	 * Retrieve a module instance of {@code type}. Will use the 
-	 * {@link #configurationInjector} if the module has not yet been
-	 * instantiated.
-	 * 
-	 * @param type
-	 * 		type of module
-	 * @return
-	 * 		instance of module
-	 */
-	private Object getInstance(Class<?> type)
-	{
-		Object o = moduleInstances.get(type);
-		if(o == null)
-		{
-			o = configurationInjector.getInstance(type);
-			moduleInstances.put(type, o);
-		}
-		
-		return o;
 	}
 	
 	/**
@@ -312,197 +221,37 @@ public class Configurator
 	{
 		logger.info("Performing configuration and startup");
 		
-		
-		
-		// init descriptors
-		initModuleDescriptors();
-		
-		// go through each and check if any configuration should be done
-		performContributions();
-	}
-	
-	/**
-	 * Add all the dependencies of the given module.
-	 * 
-	 * @param type
-	 */
-	private void addDependencies(Class<?> type)
-	{
-		Dependencies deps = type.getAnnotation(Dependencies.class);
-		if(deps != null)
+		List<Module> modules = new LinkedList<Module>();
+		for(Object m : this.modules)
 		{
-			for(Class<?> c : deps.value())
+			if(m instanceof Class)
 			{
-				add(c);
+				try
+				{
+					m = ((Class) m).newInstance();
+				}
+				catch(InstantiationException e)
+				{
+					throw new ConfigurationException("Unable to create module, a public no-args constructor required; " + e.getMessage(), e);
+				}
+				catch(IllegalAccessException e)
+				{
+					throw new ConfigurationException("Unable to create module, a public no-args constructor required; " + e.getMessage(), e);
+				}
 			}
-		}
-	}
-	
-	/**
-	 * Initialize all modules by running their module descriptors in order.
-	 */
-	private void initModuleDescriptors()
-	{
-		logger.debug("Initializing service descriptions");
-		
-		MethodResolver resolver = new MethodResolver(Description.class,
-			new MethodResolverCallback()
-			{
-				public Object getInstance(Class<?> c)
-				{
-					return Configurator.this.getInstance(c);
-				}
-
-				public String getName(MethodDef def)
-				{
-					String s = 
-						def.getMethod()
-							.getAnnotation(Description.class)
-							.name();
-					
-					return "".equals(s) 
-						? def.getObject().getClass() + "-" + def.getMethod().getName()
-						: s;
-				}
 			
+			if(m instanceof Module)
+			{
+				modules.add((Module) m);
 			}
-		);
-		
-		for(Class<?> c : modules)
-		{
-			resolver.add(c);
+			else
+			{
+				modules.add(new WrapperModule(m));
+			}
 		}
 		
-		final Set<MethodDef> defs = resolver.getOrder();
-		resolver = null;
-		
-		// Use the list of basic Guice modules and add the custom module
-		guiceModules.add(new Module()
-		{
-			public void configure(Binder binder)
-			{
-				Object[] params = new Object[] { binder };
-				
-				for(MethodDef def : defs)
-				{
-					Method method = def.getMethod();
-					Object object = def.getObject();
-					
-					try
-					{
-						method.setAccessible(true);
-						method.invoke(object, params);
-					}
-					catch(IllegalArgumentException e)
-					{
-						throw new ConfigurationException(
-							"Module description methods should take a single" 
-							+ " argument of type Binder; " + e.getMessage(), e);
-					}
-					catch(IllegalAccessException e)
-					{
-						throw new ConfigurationException(e.getMessage(), e);
-					}
-					catch(InvocationTargetException e)
-					{
-						Throwable cause = e.getCause();
-						
-						throw new ConfigurationException(cause.getMessage(), cause);
-					}
-				}
-			}
-		});
-		
-		injector = Guice.createInjector(
-			getStageFor(environment), 
-			guiceModules
-		);
-	}
-	
-	/**
-	 * Run all contributions on all modules.
-	 */
-	private void performContributions()
-	{
-		logger.debug("Performing contributions");
-		
-		MethodResolver resolver = new MethodResolver(Contribution.class,
-				new MethodResolverCallback()
-				{
-					public Object getInstance(Class<?> c)
-					{
-						return Configurator.this.getInstance(c);
-					}
-
-					public String getName(MethodDef def)
-					{
-						String s = 
-							def.getMethod()
-								.getAnnotation(Contribution.class)
-								.name();
-						
-						return "".equals(s) 
-							? def.getObject().getClass() + "-" + def.getMethod().getName()
-							: s;
-					}
-				
-				}
-			);
-		
-		callMethods(resolver);
-	}
-	
-	private void callMethods(MethodResolver resolver)
-	{
-		for(Class<?> c : modules)
-		{
-			resolver.add(c);
-		}
-		
-		final Set<MethodDef> defs = resolver.getOrder();
-		resolver = null;
-		
-		// run all contributions in order
-		for(MethodDef def : defs)
-		{
-			Method method = def.getMethod();
-			Object object = def.getObject();
-			
-			Type[] var = method.getGenericParameterTypes();
-				
-			Annotation[][] annotations = method.getParameterAnnotations();
-				
-			Object[] params = new Object[var.length];
-				
-			for(int i=0, n=var.length; i<n; i++)
-			{
-				// Use the correct method
-				Key<?> key = annotations[i].length == 0
-					? Key.get(var[i])
-					: Key.get(var[i], annotations[i][0]);
-					
-				params[i] = injector.getInstance(key);
-			}
-				
-			try
-			{
-				method.invoke(object, params);
-			}
-			catch(IllegalArgumentException e)
-			{
-				throw new ConfigurationException(e.getMessage(), e);
-			}
-			catch(IllegalAccessException e)
-			{
-				throw new ConfigurationException(e.getMessage(), e);
-			}
-			catch(InvocationTargetException e)
-			{
-				Throwable cause = e.getCause();
-				
-				throw new ConfigurationException(cause.getMessage(), cause);
-			}
-		}
+		Stage stage = getStageFor(environment);
+		injector = Guice.createInjector(stage, modules);
 	}
 	
 	/**
@@ -545,8 +294,15 @@ public class Configurator
 			}
 			catch(NoSuchMethodException e)
 			{
-				logger.warn("Found public non-annotated method in {}", module);
-				break;
+				try
+				{
+					Module.class.getMethod(m.getName(), m.getParameterTypes());
+				}
+				catch(NoSuchMethodException e2)
+				{
+					logger.warn("Found public non-annotated method in {}", module);
+					break;
+				}
 			}
 		}
 	}
@@ -563,35 +319,12 @@ public class Configurator
 	
 	/**
 	 * Perform shutdown of everything created by this configurator. Will call
-	 * methods annotated with {@link 
+	 * methods annotated with {@link Shutdown}.
 	 */
 	public void shutdown()
 	{
-		logger.info("Shutting down");
-		
-		MethodResolver resolver = new MethodResolver(Shutdown.class,
-			new MethodResolverCallback()
-			{
-				public Object getInstance(Class<?> c)
-				{
-					return Configurator.this.getInstance(c);
-				}
-
-				public String getName(MethodDef def)
-				{
-					String s = 
-						def.getMethod()
-							.getAnnotation(Shutdown.class)
-							.name();
-					
-					return "".equals(s) 
-						? def.getObject().getClass() + "-" + def.getMethod().getName()
-						: s;
-				}
-			}
-		);
-		
-		callMethods(resolver);
+		injector.getInstance(Crayon.class)
+			.shutdown();
 	}
 	
 	/**

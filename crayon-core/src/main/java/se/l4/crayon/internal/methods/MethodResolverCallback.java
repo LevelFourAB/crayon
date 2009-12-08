@@ -35,13 +35,4 @@ public interface MethodResolverCallback
 	 * 		name of definition
 	 */
 	String getName(MethodDef def);
-	
-	/**
-	 * Retrieve an instance of the given class, used when resolving
-	 * dependencies.
-	 * 
-	 * @param c
-	 * @return
-	 */
-	Object getInstance(Class<?> c);
 }
