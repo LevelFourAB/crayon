@@ -25,30 +25,24 @@ public class OSGiConfigurator
 		configurator = new Configurator();
 		configurator.setLogger(LoggerFactory.getLogger(getClass().getName() + " [" + ctx.getBundle() + "]"));
 		
-		configurator.addInstance(new InternalServices(ctx));
+		configurator.add(new InternalServices(ctx));
 	}
 	
 	public OSGiConfigurator(BundleContext ctx, Object description)
 	{
 		this(ctx);
 		
-		configurator.addInstance(description);
-	}
-	
-	public OSGiConfigurator(BundleContext ctx, Class<?> description)
-	{
-		this(ctx);
-		
 		configurator.add(description);
 	}
 
-	public OSGiConfigurator add(Class<?> type)
+	public OSGiConfigurator add(Object type)
 	{
 		configurator.add(type);
 		
 		return this;
 	}
 
+	@Deprecated
 	public OSGiConfigurator addGuiceModule(Class<? extends Module> type)
 	{
 		configurator.addGuiceModule(type);
@@ -56,6 +50,7 @@ public class OSGiConfigurator
 		return this;
 	}
 
+	@Deprecated
 	public OSGiConfigurator addGuiceModule(Module module)
 	{
 		configurator.addGuiceModule(module);
@@ -63,6 +58,7 @@ public class OSGiConfigurator
 		return this;
 	}
 
+	@Deprecated
 	public OSGiConfigurator addInstance(Object instance)
 	{
 		configurator.addInstance(instance);

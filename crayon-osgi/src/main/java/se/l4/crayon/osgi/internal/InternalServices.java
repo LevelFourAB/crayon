@@ -2,13 +2,13 @@ package se.l4.crayon.osgi.internal;
 
 import org.osgi.framework.BundleContext;
 
+import com.google.inject.Binder;
+
 import se.l4.crayon.annotation.Contribution;
 import se.l4.crayon.annotation.Description;
 import se.l4.crayon.annotation.Shutdown;
 import se.l4.crayon.osgi.ExportManager;
 import se.l4.crayon.osgi.ServiceRefManager;
-
-import com.google.inject.Binder;
 
 public class InternalServices
 {
@@ -27,7 +27,7 @@ public class InternalServices
 		binder.bind(ServiceRefManager.class).to(ServiceRefManagerImpl.class);
 	}
 		
-	@Contribution
+	@Contribution(name="osgi-export")
 	public void contribute(ExportManagerImpl manager)
 	{
 		manager.autoExport();
@@ -37,5 +37,11 @@ public class InternalServices
 	public void shutdown(ServiceRefManagerImpl manager)
 	{
 		manager.shutdown();
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "OSGi services";
 	}
 }

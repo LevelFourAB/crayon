@@ -25,8 +25,8 @@ import se.l4.crayon.osgi.ExportManager;
 public class ExportManagerImpl
 	implements ExportManager
 {
-	private BundleContext ctx;
-	private Injector injector; 
+	private final BundleContext ctx;
+	private final Injector injector;
 	
 	@Inject
 	public ExportManagerImpl(BundleContext ctx, Injector injector)
@@ -154,6 +154,4 @@ public class ExportManagerImpl
 			}
 		}
 	}
-
-	
 }
