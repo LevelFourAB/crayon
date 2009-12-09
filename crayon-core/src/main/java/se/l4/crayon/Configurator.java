@@ -209,7 +209,7 @@ public class Configurator
 	@Deprecated
 	public Configurator addGuiceModule(Class<? extends Module> type)
 	{
-		addGuiceModule(type);
+		add(type);
 		
 		return this;
 	}

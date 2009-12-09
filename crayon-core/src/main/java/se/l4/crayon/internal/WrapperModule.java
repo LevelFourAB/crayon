@@ -131,6 +131,6 @@ public class WrapperModule
 	public boolean equals(Object obj)
 	{
 		return obj instanceof WrapperModule
-			&& ((WrapperModule) obj).getClass() == delegate.getClass();
+			&& ((WrapperModule) obj).delegate.getClass() == delegate.getClass();
 	}
 }
