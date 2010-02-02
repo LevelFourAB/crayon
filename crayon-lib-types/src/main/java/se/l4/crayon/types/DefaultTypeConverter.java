@@ -31,8 +31,6 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
-import se.l4.crayon.AnnotationIndex;
-
 /**
  * Implementation of {@link TypeConverter}, supports chaining of conversions
  * to reach the desired output type.
@@ -338,25 +336,6 @@ public class DefaultTypeConverter
 			t = t * c + out.hashCode();
 			
 			return t;
-		}
-	}
-
-	public void autoLoadConverters()
-	{
-		logger.info("Using automatic conversion loading");
-		
-		if(injector != null && false == loaded)
-		{
-			AnnotationIndex index = injector.getInstance(AnnotationIndex.class);
-			
-			loaded = true;
-			
-			for(Class<Conversion> c : index.getAutoLoaded(Conversion.class))
-			{
-				logger.debug("Loading conversion {}", c);
-				
-				add(injector.getInstance(c));
-			}
 		}
 	}
 }

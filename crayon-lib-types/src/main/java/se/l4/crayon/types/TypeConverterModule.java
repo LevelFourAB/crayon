@@ -15,12 +15,8 @@
  */
 package se.l4.crayon.types;
 
-import com.google.inject.Binder;
-import com.google.inject.Scopes;
-
 import se.l4.crayon.annotation.Contribution;
 import se.l4.crayon.annotation.Description;
-import se.l4.crayon.annotation.Module;
 import se.l4.crayon.types.standard.BooleanLongConversion;
 import se.l4.crayon.types.standard.BooleanStringConversion;
 import se.l4.crayon.types.standard.ByteLongConversion;
@@ -42,6 +38,9 @@ import se.l4.crayon.types.standard.VoidDoubleConversion;
 import se.l4.crayon.types.standard.VoidLongConversion;
 import se.l4.crayon.types.standard.VoidStringConversion;
 
+import com.google.inject.Binder;
+import com.google.inject.Scopes;
+
 /**
  * Module for type converter, contributes implementation and default
  * conversions.
@@ -49,7 +48,6 @@ import se.l4.crayon.types.standard.VoidStringConversion;
  * @author Andreas Holstenson
  *
  */
-@Module
 public class TypeConverterModule
 {
 	/**

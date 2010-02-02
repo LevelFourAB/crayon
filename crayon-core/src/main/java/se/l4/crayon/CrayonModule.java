@@ -15,10 +15,10 @@
  */
 package se.l4.crayon;
 
-import static com.google.inject.internal.Preconditions.checkNotNull;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+
+import se.l4.crayon.internal.WrapperModule;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Binder;
@@ -37,8 +37,6 @@ import com.google.inject.spi.Message;
 import com.google.inject.spi.TypeConverter;
 import com.google.inject.spi.TypeListener;
 
-import se.l4.crayon.internal.WrapperModule;
-
 /**
  * Module that can be used that works like {@link AbstractModule} but uses
  * {@link CrayonBinder} as well.
@@ -53,7 +51,7 @@ public abstract class CrayonModule
 
 	public final synchronized void configure(Binder builder)
 	{
-		this.binder = checkNotNull(builder, "builder");
+		this.binder = builder;
 		binder.install(new WrapperModule(this));
 		
 		configure();
