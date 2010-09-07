@@ -95,6 +95,9 @@ public class Configurator
 	private InternalConfiguratorModule internalModule;
 	/** Injector created via {@link #configure()}. */
 	private Injector injector;
+
+	/** Parent injector. */
+	private Injector parentInjector;
 	
 	/**
 	 * Create a configurator using {@link Environment#DEVELOPMENT}.
@@ -131,6 +134,18 @@ public class Configurator
 	public void setLogger(Logger logger)
 	{
 		this.logger = logger;
+	}
+
+	public Configurator setParentInjector(Injector injector)
+	{
+		this.parentInjector = injector;
+
+		return this;
+	}
+
+	public Injector getParentInjector()
+	{
+		return parentInjector;
 	}
 	
 	/**
@@ -251,7 +266,9 @@ public class Configurator
 		}
 		
 		Stage stage = getStageFor(environment);
-		injector = Guice.createInjector(stage, modules);
+		injector = parentInjector == null
+			? Guice.createInjector(stage, modules)
+			: parentInjector.createChildInjector(modules);
 	}
 	
 	/**
