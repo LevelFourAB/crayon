@@ -149,30 +149,33 @@ public abstract class CrayonBinder
 			).toInstance(module);
 			
 			Class<?> type = module.getClass();
-			Dependencies deps = type.getAnnotation(Dependencies.class);
-			if(deps != null)
+			while(type != null && type != Object.class)
 			{
-				for(Class<?> c : deps.value())
+				Dependencies deps = type.getAnnotation(Dependencies.class);
+				if(deps != null)
 				{
-					try
+					for(Class<?> c : deps.value())
 					{
-						Object o = c.newInstance();
-						if(o instanceof Module)
+						try
 						{
-							binder.install((Module) o);
+							Object o = c.newInstance();
+							if(o instanceof Module)
+							{
+								binder.install((Module) o);
+							}
+							else
+							{
+								binder.install(new WrapperModule(o));
+							}
 						}
-						else
+						catch(InstantiationException e)
 						{
-							binder.install(new WrapperModule(o));
+							throw new ConfigurationException("Unable to create instance of " + c, e);
 						}
-					}
-					catch(InstantiationException e)
-					{
-						throw new ConfigurationException("Unable to create instance of " + c, e);
-					}
-					catch(IllegalAccessException e)
-					{
-						throw new ConfigurationException("Unable to create instance of " + c, e);
+						catch(IllegalAccessException e)
+						{
+							throw new ConfigurationException("Unable to create instance of " + c, e);
+						}
 					}
 				}
 			}

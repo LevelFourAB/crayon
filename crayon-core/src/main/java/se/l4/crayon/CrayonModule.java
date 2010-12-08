@@ -18,8 +18,6 @@ package se.l4.crayon;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
-import se.l4.crayon.internal.WrapperModule;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Binder;
 import com.google.inject.Key;
@@ -36,6 +34,8 @@ import com.google.inject.matcher.Matcher;
 import com.google.inject.spi.Message;
 import com.google.inject.spi.TypeConverter;
 import com.google.inject.spi.TypeListener;
+
+import se.l4.crayon.internal.WrapperModule;
 
 /**
  * Module that can be used that works like {@link AbstractModule} but uses
@@ -254,5 +254,17 @@ public abstract class CrayonModule
 			TypeListener listener)
 	{
 		binder.bindListener(typeMatcher, listener);
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return getClass().hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj)
+	{
+		return obj.getClass() == getClass();
 	}
 }
