@@ -178,6 +178,8 @@ public abstract class CrayonBinder
 						}
 					}
 				}
+				
+				type = type.getSuperclass();
 			}
 		}
 
