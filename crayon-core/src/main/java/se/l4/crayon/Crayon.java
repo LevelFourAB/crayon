@@ -30,4 +30,10 @@ public interface Crayon
 	 * Perform registered shutdown actions.
 	 */
 	void shutdown();
+
+	/**
+	 * Perform registered startup action.
+	 * 
+	 */
+	void start();
 }

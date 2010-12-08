@@ -89,6 +89,8 @@ public class Configurator
 	/** Parent injector. */
 	private Injector parentInjector;
 
+	private boolean autoStart;
+	
 	/**
 	 * Create a configurator using {@link Environment#DEVELOPMENT}.
 	 * 
@@ -114,6 +116,9 @@ public class Configurator
 		modules.add(internalModule);
 		
 		logger = LoggerFactory.getLogger(Configurator.class);
+		
+		// run start() by default in configure
+		autoStart = true;
 	}
 	
 	/**
@@ -136,6 +141,17 @@ public class Configurator
 	public Injector getParentInjector()
 	{
 		return parentInjector;
+	}
+	
+	/**
+	 * Set if the configurator should automatically call {@link Crayon#start()}
+	 * when {@link #configure()} is run.
+	 * 
+	 * @param autoStart
+	 */
+	public void setAutoStart(boolean autoStart)
+	{
+		this.autoStart = autoStart;
 	}
 	
 	/**
@@ -259,6 +275,13 @@ public class Configurator
 		injector = parentInjector == null
 			? Guice.createInjector(stage, modules)
 			: parentInjector.createChildInjector(modules);
+			
+		if(autoStart)
+		{
+			injector
+				.getInstance(Crayon.class)
+				.start();
+		}
 	}
 	
 	/**

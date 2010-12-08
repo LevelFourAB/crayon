@@ -37,7 +37,10 @@ public class CrayonImpl
 	{
 		this.injector = injector;
 		this.modules = modules;
-		
+	}
+	
+	public void start()
+	{
 		performContributions();
 	}
 	
