@@ -41,16 +41,6 @@ import se.l4.crayon.internal.WrapperModule;
  * <a href="http://code.google.com/p/google-guice/">Guice website</a> for more
  * information about modules.
  * 
- * <h2>Auto-discovery of modules</h2>
- * The entry point can attempt to discover modules stored in Jar-files. This
- * is done by looking at the manifest of the Jar-file. Storing a key inside
- * it named {@code System-Modules} (see {@link #MANIFEST_KEY}). The key should
- * contain a value with fully qualified class names separated with commas (,).
- * Those classes will be loaded and configured by the entry point.
- * 
- * <p>
- * Discovery is done via the method {@link #discover()}.
- * 
  * <h2>Contribution support</h2>
  * Each modules supports contribution of properties or configuration of objects.
  * This is done via automatic invocation of methods annotated with 
@@ -98,7 +88,7 @@ public class Configurator
 
 	/** Parent injector. */
 	private Injector parentInjector;
-	
+
 	/**
 	 * Create a configurator using {@link Environment#DEVELOPMENT}.
 	 * 
@@ -305,23 +295,30 @@ public class Configurator
 				continue;
 			}
 			
+			if(false == isMethodInheritedFrom(m, Object.class, Module.class)
+				&& false == isMethodInheritedFrom(m, module.getSuperclass())
+				&& false == isMethodInheritedFrom(m, module.getInterfaces()))
+			{
+				logger.warn("Found public non-annotated method in {}", module);
+			}
+		}
+	}
+	
+	private boolean isMethodInheritedFrom(Method m, Class... types)
+	{
+		for(Class c : types)
+		{
 			try
 			{
-				Object.class.getMethod(m.getName(), m.getParameterTypes());
+				c.getMethod(m.getName(), m.getParameterTypes());
+				return true;
 			}
 			catch(NoSuchMethodException e)
 			{
-				try
-				{
-					Module.class.getMethod(m.getName(), m.getParameterTypes());
-				}
-				catch(NoSuchMethodException e2)
-				{
-					logger.warn("Found public non-annotated method in {}", module);
-					break;
-				}
 			}
 		}
+		
+		return false;
 	}
 	
 	/**
