@@ -20,12 +20,10 @@ import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import se.l4.crayon.CrayonModule;
 import se.l4.crayon.annotation.Contribution;
-import se.l4.crayon.annotation.Description;
 import se.l4.crayon.annotation.Order;
 import se.l4.crayon.services.internal.ServiceManagerImpl;
-
-import com.google.inject.Binder;
 
 /**
  * Module configuration for services. Binds {@link ServiceManager} to its
@@ -35,12 +33,13 @@ import com.google.inject.Binder;
  *
  */
 public class ServicesModule
+	extends CrayonModule
 {
-	@Description
-	public void configure(Binder binder)
+	@Override
+	public void configure()
 	{
 		// Services
-		binder.bind(ServiceManager.class).to(ServiceManagerImpl.class);
+		bind(ServiceManager.class).to(ServiceManagerImpl.class);
 	}
 	
 	@Contribution(name="services")
