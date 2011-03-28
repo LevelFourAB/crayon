@@ -27,7 +27,7 @@
 			<plugin>
         		<groupId>se.l4.crayon</groupId>
         		<artifactId>maven-osgi-plugin</artifactId>
-        		<version>0.3-SNAPSHOT</version>
+        		<version>${project.version}</version>
         		
         		<executions>
 					<execution>
