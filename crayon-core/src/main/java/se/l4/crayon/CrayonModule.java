@@ -51,7 +51,7 @@ public abstract class CrayonModule
 
 	public final synchronized void configure(Binder builder)
 	{
-		this.binder = builder;
+		binder = builder.skipSources(CrayonModule.class);
 		binder.install(new WrapperModule(this));
 		
 		configure();
