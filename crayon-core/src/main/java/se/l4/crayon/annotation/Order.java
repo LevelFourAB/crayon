@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation that can be used to define the order of module configuration and
- * contribution. This annotation takes a several string that describes its
+ * contribution. This annotation takes several string that describe its
  * preferred ordering.
  * 
  * <ul>

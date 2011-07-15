@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import se.l4.crayon.ConfigurationException;
+import se.l4.crayon.annotation.Order;
 import se.l4.crayon.internal.DependencyResolver;
 
 /**
@@ -102,86 +103,109 @@ public class MethodResolver
 	{
 		DependencyResolver<MethodDef> resolver =
 			new DependencyResolver<MethodDef>();
-		
-		for(MethodDef def : methods.values())
+
+		for(Map.Entry<String, MethodDef> e : methods.entrySet())
 		{
+			String name = e.getKey();
+			MethodDef def = e.getValue();
+			
 			// Always add without any dependencies
 			resolver.add(def);
+			
+			// Handle dependencies due to method parameters
+			for(Class<?> c : def.getMethod().getParameterTypes())
+			{
+				if(c.isAnnotationPresent(Order.class))
+				{
+					Order order = c.getAnnotation(Order.class);
+					for(String s : order.value())
+					{
+						if(s.equals(name)) continue;
+						
+						handleOrderEntry(resolver, def, s);
+					}
+				}
+			}
 			
 			// Take care of order dependencies
 			String[] order = def.getOrder();
 			for(String s : order)
 			{
-				if(s.startsWith("before:"))
-				{
-					s = s.substring(7);
-					
-					MethodDef d = methods.get(s);
-					if(d != null)
-					{
-						resolver.addDependency(d, def);
-					}
-				}
-				else if(s.startsWith("after:"))
-				{
-					s = s.substring(6);
-					
-					MethodDef d = methods.get(s);
-					if(d != null)
-					{
-						resolver.addDependency(def, d);
-					}
-				}
-				else if(s.equals("last"))
-				{
-					for(MethodDef d : methods.values())
-					{
-						boolean ok = true;
-						for(String sd : d.getOrder())
-						{
-							if(sd.equals("last"))
-							{
-								ok = false;
-								break;
-							}
-						}
-						
-						if(ok)
-						{
-							resolver.addDependency(def, d);
-						}
-					}
-				}
-				else if(s.equals("first"))
-				{
-					for(MethodDef d : methods.values())
-					{
-						boolean ok = true;
-						for(String sd : d.getOrder())
-						{
-							if(sd.equals("first"))
-							{
-								ok = false;
-								break;
-							}
-						}
-						
-						if(ok)
-						{
-							resolver.addDependency(d, def);
-						}
-					}
-				}
-				else
-				{
-					throw new ConfigurationException("Invalid order `" + s 
-						+ "` in " + def.getMethod().getName() + " (" 
-						+ def.getMethod().getDeclaringClass() + ")");
-				}
+				handleOrderEntry(resolver, def, s);
 			}
 		}
 		
 		return resolver.getOrder();
+	}
+
+	private void handleOrderEntry(DependencyResolver<MethodDef> resolver, MethodDef def, String s)
+	{
+		if(s.startsWith("before:"))
+		{
+			s = s.substring(7);
+			
+			MethodDef d = methods.get(s);
+			if(d != null)
+			{
+				resolver.addDependency(d, def);
+			}
+		}
+		else if(s.startsWith("after:"))
+		{
+			s = s.substring(6);
+			
+			MethodDef d = methods.get(s);
+			if(d != null)
+			{
+				resolver.addDependency(def, d);
+			}
+		}
+		else if(s.equals("last"))
+		{
+			for(MethodDef d : methods.values())
+			{
+				boolean ok = true;
+				for(String sd : d.getOrder())
+				{
+					if(sd.equals("last"))
+					{
+						ok = false;
+						break;
+					}
+				}
+				
+				if(ok)
+				{
+					resolver.addDependency(def, d);
+				}
+			}
+		}
+		else if(s.equals("first"))
+		{
+			for(MethodDef d : methods.values())
+			{
+				boolean ok = true;
+				for(String sd : d.getOrder())
+				{
+					if(sd.equals("first"))
+					{
+						ok = false;
+						break;
+					}
+				}
+				
+				if(ok)
+				{
+					resolver.addDependency(d, def);
+				}
+			}
+		}
+		else
+		{
+			throw new ConfigurationException("Invalid order `" + s 
+				+ "` in " + def.getMethod().getName() + " (" 
+				+ def.getMethod().getDeclaringClass() + ")");
+		}
 	}
 	
 }
