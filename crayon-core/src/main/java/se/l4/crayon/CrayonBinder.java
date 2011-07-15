@@ -43,7 +43,6 @@ import se.l4.crayon.internal.WrapperModule;
  * any Guice module. When the binder has been used any methods annotated with
  * {@link Contribution} will be run after the creation of the {@link Injector}.
  * 
- * 
  * <p>
  * Example usage:
  * <pre>
@@ -62,14 +61,14 @@ import se.l4.crayon.internal.WrapperModule;
  * </pre>
  * 
  * @author Andreas Holstenson
- *
+ * @see CrayonModule
  */
 public abstract class CrayonBinder
 {
-	private static final TypeLiteral<Set<Object>> TYPE =
+	public static final TypeLiteral<Set<Object>> TYPE =
 		new TypeLiteral<Set<Object>>() {};
 		
-	private static final Key<Set<Object>> KEY
+	public static final Key<Set<Object>> KEY
 		= Key.get(TYPE, Names.named("crayon-modules"));
 		
 	public static CrayonBinder newBinder(Binder binder)
