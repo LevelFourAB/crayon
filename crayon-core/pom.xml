@@ -10,7 +10,7 @@
 	
 	<artifactId>crayon-core</artifactId>
 	<packaging>jar</packaging>
-	<name>crayon-core</name>
+	<name>${project.artifactId}</name>
 	
 	<dependencies>
 		<dependency>
