@@ -17,13 +17,7 @@
 
 		<!-- standard modules -->
 		<module>crayon-core</module>
-		<module>crayon-lib-types</module>
-		<module>crayon-lib-error</module>
 		<module>crayon-lib-services</module>
-
-		<!-- OSGi support -->
-		<module>crayon-osgi</module>
-		<module>crayon-osgi-remoting</module>
 	</modules>
 
 	<!-- License -->
@@ -118,6 +112,16 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

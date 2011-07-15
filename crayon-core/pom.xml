@@ -12,45 +12,6 @@
 	<packaging>jar</packaging>
 	<name>crayon-core</name>
 	
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				
-				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
-				</configuration>
-			</plugin>
-			
-			<plugin>
-        		<groupId>se.l4.crayon</groupId>
-        		<artifactId>maven-osgi-plugin</artifactId>
-        		<version>${project.version}</version>
-        		
-        		<executions>
-					<execution>
-						<goals>
-							<goal>process</goal>
-						</goals>
-					</execution>
-				</executions>
-      		</plugin>
-      		
-      		<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-
-				<configuration>
-					<archive>
-						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-					</archive>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-
 	<dependencies>
 		<dependency>
 			<groupId>com.google.inject</groupId>
@@ -67,7 +28,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.4.3</version>
+			<version>1.6.1</version>
 		</dependency>
 	</dependencies>
 </project>
