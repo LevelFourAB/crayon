@@ -27,12 +27,15 @@ import com.google.inject.Binder;
  * Defines that a method describes part of the module, the method will be given
  * {@link Binder} as an argument.
  * 
+ * @deprecated
+ * 		this annotation should no longer be used
  * @author Andreas Holstenson
  *
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+@Deprecated
 public @interface Description
 {
 	/** Name of module, can be used for ordering. */

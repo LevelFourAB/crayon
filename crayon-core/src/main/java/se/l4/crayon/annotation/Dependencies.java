@@ -21,9 +21,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.google.inject.Binder;
+
 /**
  * Declaration of a modules dependencies, the classes will be automatically
  * added to the list of classes that should be loaded and configured.
+ * 
+ * @deprecated
+ * 	{@link Binder #install(com.google.inject.Module)} should be used instead
  * 
  * @author Andreas Holstenson
  *
@@ -31,6 +36,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+@Deprecated
 public @interface Dependencies
 {
 	Class<?>[] value();

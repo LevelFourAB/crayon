@@ -15,13 +15,17 @@
  */
 package se.l4.crayon;
 
+import com.google.inject.Stage;
+
 /**
  * Environment that the system is running in. Can be given to 
  * {@link Configurator} at startup to define the environment of the system.
  * 
+ * @deprecated
+ * 		use {@link Stage}
  * @author Andreas Holstenson
- *
  */
+@Deprecated
 public enum Environment
 {
 	/**

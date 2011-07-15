@@ -15,7 +15,6 @@
  */
 package se.l4.crayon;
 
-import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -29,7 +28,6 @@ import com.google.inject.Module;
 import com.google.inject.Stage;
 
 import se.l4.crayon.annotation.Contribution;
-import se.l4.crayon.annotation.Description;
 import se.l4.crayon.annotation.Shutdown;
 import se.l4.crayon.internal.InternalConfiguratorModule;
 import se.l4.crayon.internal.WrapperModule;
@@ -75,8 +73,8 @@ public class Configurator
 	/** Logger used within the configurator. */
 	private Logger logger;
 	
-	/** Environment that the configurator is working in. */
-	private Environment environment;
+	/** The stage the built injector will be in. */
+	private Stage stage;
 
 	/** List containing all the Guice modules. */
 	private List<Object> modules;
@@ -92,12 +90,12 @@ public class Configurator
 	private boolean autoStart;
 	
 	/**
-	 * Create a configurator using {@link Environment#DEVELOPMENT}.
+	 * Create a configurator using {@link Stage#PRODUCTION}.
 	 * 
 	 */
 	public Configurator()
 	{
-		this(Environment.DEVELOPMENT);
+		this(Stage.PRODUCTION);
 	}
 	
 	/**
@@ -105,9 +103,20 @@ public class Configurator
 	 * 
 	 * @param environment
 	 */
+	@Deprecated
 	public Configurator(Environment environment)
 	{
-		this.environment = environment;
+		this(getStageFor(environment));
+	}
+	
+	/**
+	 * Create a new configurator in the specified stage.
+	 * 
+	 * @param stage
+	 */
+	public Configurator(Stage stage)
+	{
+		this.stage = stage;
 		
 		modules = new LinkedList<Object>();
 		
@@ -165,12 +174,6 @@ public class Configurator
 		if(modules.add(instance))
 		{
 			logger.info("Adding: {}", instance);
-			
-			if(environment == Environment.DEVELOPMENT)
-			{
-				checkModule(instance instanceof Class
-					? (Class) instance : instance.getClass());
-			}
 		}
 		
 		return this;
@@ -271,7 +274,6 @@ public class Configurator
 			}
 		}
 		
-		Stage stage = getStageFor(environment);
 		injector = parentInjector == null
 			? Guice.createInjector(stage, modules)
 			: parentInjector.createChildInjector(modules);
@@ -292,7 +294,7 @@ public class Configurator
 	 * @return
 	 * 		suitable Guice stage
 	 */
-	private Stage getStageFor(Environment environment)
+	private static Stage getStageFor(Environment environment)
 	{
 		return environment == Environment.PRODUCTION
 			? Stage.PRODUCTION
@@ -300,48 +302,16 @@ public class Configurator
 	}
 	
 	/**
-	 * Check a module for public methods that are not annotated with either
-	 * {@link Description} or {@link Contribution} and not inherited from 
-	 * {@link Object}. Will log a warning if such methods are found.
+	 * Translate stage to environment.
 	 * 
-	 * @param module
-	 * 		module to check
+	 * @param stage
+	 * @return
 	 */
-	private void checkModule(Class<?> module)
+	private static Environment getEnvironment(Stage stage)
 	{
-		for(Method m  : module.getMethods())
-		{
-			if(m.isAnnotationPresent(Description.class)
-				|| m.isAnnotationPresent(Contribution.class)
-				|| m.isAnnotationPresent(Shutdown.class))
-			{
-				continue;
-			}
-			
-			if(false == isMethodInheritedFrom(m, Object.class, Module.class)
-				&& false == isMethodInheritedFrom(m, module.getSuperclass())
-				&& false == isMethodInheritedFrom(m, module.getInterfaces()))
-			{
-				logger.warn("Found public non-annotated method in {}", module);
-			}
-		}
-	}
-	
-	private boolean isMethodInheritedFrom(Method m, Class... types)
-	{
-		for(Class c : types)
-		{
-			try
-			{
-				c.getMethod(m.getName(), m.getParameterTypes());
-				return true;
-			}
-			catch(NoSuchMethodException e)
-			{
-			}
-		}
-		
-		return false;
+		return stage == Stage.PRODUCTION
+			? Environment.PRODUCTION
+			: Environment.DEVELOPMENT;
 	}
 	
 	/**
@@ -370,8 +340,19 @@ public class Configurator
 	 * @return
 	 * 		environment
 	 */
+	@Deprecated
 	public Environment getEnvironment()
 	{
-		return environment;
+		return getEnvironment(stage);
+	}
+	
+	/**
+	 * Get the stage of the configurator.
+	 * 
+	 * @return
+	 */
+	public Stage getStage()
+	{
+		return stage;
 	}
 }
