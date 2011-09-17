@@ -9,19 +9,20 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-
 import se.l4.crayon.ConfigurationException;
+import se.l4.crayon.Contributions;
 import se.l4.crayon.Crayon;
 import se.l4.crayon.annotation.Contribution;
 import se.l4.crayon.annotation.Shutdown;
 import se.l4.crayon.internal.methods.MethodDef;
 import se.l4.crayon.internal.methods.MethodResolver;
 import se.l4.crayon.internal.methods.MethodResolverCallback;
+
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 @Singleton
 public class CrayonImpl
@@ -44,38 +45,122 @@ public class CrayonImpl
 		performContributions();
 	}
 	
+	private static String name(Method method, Annotation annotation)
+	{
+		if(method == null) return null;
+		
+		try
+		{
+			return (String) method.invoke(annotation);
+		}
+		catch(IllegalArgumentException e)
+		{
+		}
+		catch(IllegalAccessException e)
+		{
+		}
+		catch(InvocationTargetException e)
+		{
+		}
+		
+		return null;
+	}
+	
+	private Method getMethod(Class<? extends Annotation> annotation)
+	{
+		try
+		{
+			return annotation.getMethod("name");
+		}
+		catch(SecurityException e)
+		{
+		}
+		catch(NoSuchMethodException e)
+		{
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Create an instance of {@link Contributions} for the given annotation.
+	 * 
+	 * @param annotation
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public Contributions createContributions(final Class<? extends Annotation> annotation)
+	{
+		final Method name = getMethod(annotation);
+		
+		return new Contributions()
+		{
+			@Override
+			public void run()
+			{
+				MethodResolver resolver = new MethodResolver(new MethodResolverCallback()
+					{
+						public String getName(MethodDef def)
+						{
+							Annotation a = def.getMethod()
+								.getAnnotation(annotation);
+							
+							String s = name(name, a);
+							
+							return s == null || "".equals(s) 
+								? def.getObject().getClass() + "-" + def.getMethod().getName()
+								: s;
+						}
+					},
+					annotation
+				);
+				
+				callMethods(resolver);
+			}
+			
+			@Override
+			public String toString()
+			{
+				return "Contributions[" + annotation.getSimpleName() + "]";
+			}
+		};
+	}
+	
 	/**
 	 * Run all contributions on all modules.
 	 */
+	@SuppressWarnings("unchecked")
 	private void performContributions()
 	{
 		logger.debug("Performing contributions");
 		
-		MethodResolver resolver = new MethodResolver(Contribution.class,
-				new MethodResolverCallback()
+		MethodResolver resolver = new MethodResolver(
+			new MethodResolverCallback()
+			{
+				public String getName(MethodDef def)
 				{
-					public String getName(MethodDef def)
-					{
-						String s = 
-							def.getMethod()
-								.getAnnotation(Contribution.class)
-								.name();
-						
-						return "".equals(s) 
-							? def.getObject().getClass() + "-" + def.getMethod().getName()
-							: s;
-					}
+					String s = 
+						def.getMethod()
+							.getAnnotation(Contribution.class)
+							.name();
+					
+					return "".equals(s) 
+						? def.getObject().getClass() + "-" + def.getMethod().getName()
+						: s;
 				}
-			);
+			},
+			Contribution.class
+		);
 		
 		callMethods(resolver);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void shutdown()
 	{
 		logger.info("Shutting down");
 		
-		MethodResolver resolver = new MethodResolver(Shutdown.class,
+		MethodResolver resolver = new MethodResolver(
 			new MethodResolverCallback()
 			{
 				public String getName(MethodDef def)
@@ -89,7 +174,8 @@ public class CrayonImpl
 						? def.getObject().getClass() + "-" + def.getMethod().getName()
 						: s;
 				}
-			}
+			},
+			Shutdown.class
 		);
 		
 		callMethods(resolver);

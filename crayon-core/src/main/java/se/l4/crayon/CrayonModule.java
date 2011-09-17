@@ -35,8 +35,6 @@ import com.google.inject.spi.Message;
 import com.google.inject.spi.TypeConverter;
 import com.google.inject.spi.TypeListener;
 
-import se.l4.crayon.internal.WrapperModule;
-
 /**
  * Module that can be used that works like {@link AbstractModule} but uses
  * {@link CrayonBinder} as well.
@@ -47,12 +45,13 @@ import se.l4.crayon.internal.WrapperModule;
 public abstract class CrayonModule
 	implements Module
 {
-	Binder binder;
+	private Binder binder;
+	private CrayonBinder crayon;
 
 	public final synchronized void configure(Binder builder)
 	{
 		binder = builder.skipSources(CrayonModule.class);
-		binder.install(new WrapperModule(this));
+		crayon = CrayonBinder.newBinder(binder, this);
 		
 		configure();
 	}
@@ -68,6 +67,27 @@ public abstract class CrayonModule
 	protected Binder binder()
 	{
 		return binder;
+	}
+	
+	/**
+	 * Get the {@link CrayonBinder} for this module.
+	 * 
+	 * @return
+	 */
+	protected CrayonBinder crayon()
+	{
+		return crayon;
+	}
+	
+	/**
+	 * Bind a {@link Contributions} instance. 
+	 * 
+	 * @see CrayonBinder#bindContributions(Class)
+	 * @param annotation
+	 */
+	protected void bindContributions(Class<? extends Annotation> annotation)
+	{
+		crayon.bindContributions(annotation);
 	}
 	
 	/**

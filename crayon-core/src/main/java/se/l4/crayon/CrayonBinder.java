@@ -22,6 +22,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import se.l4.crayon.annotation.Contribution;
+import se.l4.crayon.annotation.Dependencies;
+import se.l4.crayon.internal.CrayonImpl;
+import se.l4.crayon.internal.WrapperModule;
+
 import com.google.inject.Binder;
 import com.google.inject.Binding;
 import com.google.inject.Inject;
@@ -29,14 +34,10 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Provider;
+import com.google.inject.Scopes;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
-
-import se.l4.crayon.annotation.Contribution;
-import se.l4.crayon.annotation.Dependencies;
-import se.l4.crayon.internal.CrayonImpl;
-import se.l4.crayon.internal.WrapperModule;
 
 /**
  * Class used to add support for contributions and other Crayon features to
@@ -91,6 +92,13 @@ public abstract class CrayonBinder
 	}
 	
 	public abstract void module(Object module);
+
+	/**
+	 * Bind an instance of {@link Contributions}.
+	 * 
+	 * @param annotation
+	 */
+	public abstract void bindContributions(Class<? extends Annotation> annotation);
 	
 	private static class RealBinder
 		extends CrayonBinder
@@ -180,6 +188,29 @@ public abstract class CrayonBinder
 				
 				type = type.getSuperclass();
 			}
+		}
+		
+		@Override
+		public void bindContributions(final Class<? extends Annotation> annotation)
+		{
+			// Bind via a provider and delegate to CrayonImpl
+			binder.bind(Contributions.class).annotatedWith(annotation)
+				.toProvider(new Provider<Contributions>()
+				{
+					private CrayonImpl crayon;
+
+					@Inject
+					private void setup(CrayonImpl crayon)
+					{
+						this.crayon = crayon;
+					}
+					
+					@Override
+					public Contributions get()
+					{
+						return crayon.createContributions(annotation);
+					}
+				}).in(Scopes.SINGLETON);
 		}
 
 		@Override

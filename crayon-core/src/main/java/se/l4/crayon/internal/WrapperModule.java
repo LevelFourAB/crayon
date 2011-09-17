@@ -19,9 +19,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Set;
 
-import com.google.inject.Binder;
-import com.google.inject.Module;
-
 import se.l4.crayon.ConfigurationException;
 import se.l4.crayon.CrayonBinder;
 import se.l4.crayon.annotation.Description;
@@ -29,15 +26,14 @@ import se.l4.crayon.internal.methods.MethodDef;
 import se.l4.crayon.internal.methods.MethodResolver;
 import se.l4.crayon.internal.methods.MethodResolverCallback;
 
+import com.google.inject.Binder;
+import com.google.inject.Module;
+
 /**
  * Module wrapping any class that is not of type {@link Module} and invokes
  * any methods annotated with {@link Description}.
  * 
  * @author Andreas Holstenson
- *
- */
-/**
- * @author andreas
  *
  */
 public class WrapperModule
@@ -60,7 +56,7 @@ public class WrapperModule
 			.module(delegate);
 		
 		// Resolve any methods annotated with Description and invoke them
-		MethodResolver resolver = new MethodResolver(Description.class,
+		MethodResolver resolver = new MethodResolver(
 			new MethodResolverCallback()
 			{
 				public String getName(MethodDef def)
@@ -75,7 +71,8 @@ public class WrapperModule
 						: s;
 				}
 			
-			}
+			},
+			Description.class
 		);
 		
 		resolver.add(delegate);

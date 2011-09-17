@@ -42,13 +42,14 @@ public class MethodResolver
 	private Map<String, MethodDef> methods;
 	private Map<Class<?>, List<MethodDef>> defs;
 	
-	private Class<? extends Annotation> annotation;
+	private Class<? extends Annotation>[] annotations;
 	private MethodResolverCallback callback;
 	
-	public MethodResolver(Class<? extends Annotation> annotation,
-		MethodResolverCallback callback)
+	public MethodResolver(
+		MethodResolverCallback callback,
+		Class<? extends Annotation>... annotations)
 	{
-		this.annotation = annotation;
+		this.annotations = annotations;
 		this.callback = callback;
 		
 		methods = new HashMap<String, MethodDef>();
@@ -70,11 +71,15 @@ public class MethodResolver
 		Method[] declared = type.getMethods();
 		List<MethodDef> defs = getMethodDefs(type);
 		
+		_outer:
 		for(Method m : declared)
 		{
-			if(false == m.isAnnotationPresent(annotation))
+			for(Class<? extends Annotation> a : annotations)
 			{
-				continue;
+				if(false == m.isAnnotationPresent(a))
+				{
+					continue _outer;
+				}
 			}
 			
 			MethodDef def = new MethodDef(instance, m);

@@ -33,7 +33,7 @@ import java.lang.annotation.Target;
  * @author Andreas Holstenson
  *
  */
-@Target(ElementType.METHOD)
+@Target({ ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Contribution
