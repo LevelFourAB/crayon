@@ -7,7 +7,7 @@
 	<version>0.5-SNAPSHOT</version>
 	<artifactId>crayon</artifactId>
 
-	<name>crayon-base</name>
+	<name>${project.artifactId}</name>
 	
 	<packaging>pom</packaging>
 
@@ -15,6 +15,11 @@
 		<module>crayon-core</module>
 		<module>crayon-lib-services</module>
 	</modules>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
 
 	<!-- License -->
 	<licenses>
@@ -90,11 +95,6 @@
 		</repository>
 	</repositories>
 	
-	<!-- SCM -->
-	<scm>
-		<connection>scm:svn:http://crayon-java.googlecode.com/svn/tags/crayon-0.2</connection>
-	</scm>
-
 	<build>
 		<plugins>
 			<plugin>
