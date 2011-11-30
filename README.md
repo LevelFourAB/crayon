@@ -1,27 +1,33 @@
-Crayon is an extension to [Google Guice]((http://code.google.com/p/google-guice/)) that provides the ability to define contribution methods. A contribution method is called after the Guice Injector has been created and can use any binding defined.
+Crayon is an extension to [Google Guice](http://code.google.com/p/google-guice/) that provides the ability to define contribution methods. A contribution method is called after the Guice Injector has been created and can use any binding defined.
 
 ## Defining a contribution
 
 Methods are defined in Guice modules. Either by extending `CrayonModule` or by creating a `CrayonBinder` directly:
 
-	public void configure() {
-		CrayonBinder.newBinder(binder, this);
-	}
+```java
+public void configure() {
+	CrayonBinder.newBinder(binder, this);
+}
+```
 
 Example of defining a contribution method:
 
-	@Contribution
-	public void contributeService(ServiceManager manager, TestService service) {
-		manager.add(service);
-	}
+```java
+@Contribution
+public void contributeService(ServiceManager manager, TestService service) {
+	manager.add(service);
+}
+```
 
 ## Calling the contributions
 
 Call the contributions by calling `Crayon.start()`:
 
-	Injector injector = Guice.createInjector(...);
-	Crayon crayon = injector.getInstance(Crayon.class);
-	crayon.start();
+```java
+Injector injector = Guice.createInjector(...);
+Crayon crayon = injector.getInstance(Crayon.class);
+crayon.start();
+```
 
 ## Custom contributions
 
