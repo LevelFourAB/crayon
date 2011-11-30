@@ -3,11 +3,24 @@
 	
 	<modelVersion>4.0.0</modelVersion>
 	
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
+	
 	<groupId>se.l4.crayon</groupId>
 	<version>0.6-SNAPSHOT</version>
 	<artifactId>crayon</artifactId>
 
 	<name>${project.artifactId}</name>
+	
+	<url>https://github.com/LevelFourAB/crayon</url>
+	
+	<description>
+		Crayon is an extension to Google Guice that provides the ability to 
+		define contribution methods.
+	</description>
 	
 	<packaging>pom</packaging>
 
@@ -24,12 +37,12 @@
 	<!-- License -->
 	<licenses>
 		<license>
-			<name>Apache 2</name>
+			<name>The Apache Software License, Version 2.0</name>
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-
+	
 	<!-- Common dependencies (for testing) -->
 	<dependencies>
 		<dependency>
@@ -55,61 +68,8 @@
 		</dependency>
 	</dependencies>
 
-	<distributionManagement>
-		<repository>
-			<id>crayon</id>
-			<name>Crayon Release Repository</name>
-			<url>file:${crayon.repository}/releases</url>
-		</repository>
-		<snapshotRepository>
-			<id>crayon</id>
-			<name>Crayon Snapshot Repository</name>
-			<url>file:${crayon.repository}/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
-
-	<repositories>
-		<repository>
-			<id>crayon</id>
-			<name>Crayon Release Repository</name>
-			<url>http://crayon-java.googlecode.com/svn/repository/releases</url>
-			
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>crayon-snapshots</id>
-			<name>Crayon Snapshot Repository</name>
-			<url>http://crayon-java.googlecode.com/svn/repository/snapshots</url>
-
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-	
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -123,8 +83,16 @@
 	</build>
 	
 	<scm>
-		<connection>scm:git:git@github.com:aholstenson/crayon.git</connection>
-		<url>scm:git:git@github.com:aholstenson/crayon.git</url>
-		<developerConnection>scm:git:git@github.com:aholstenson/crayon.git</developerConnection>
+		<connection>scm:git:git@github.com:LevelFourAB/crayon.git</connection>
+		<url>git@github.com:LevelFourAB/crayon.git</url>
+		<developerConnection>scm:git:git@github.com:LevelFourAB/crayon.git</developerConnection>
 	</scm>
+	
+	<developers>
+		<developer>
+			<id>aholstenson</id>
+			<name>Andreas Holstenson</name>
+			<email>a@holstenson.se</email>
+		</developer>
+	</developers>
 </project>
