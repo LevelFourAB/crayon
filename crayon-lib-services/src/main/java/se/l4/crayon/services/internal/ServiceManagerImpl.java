@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Andreas Holstenson
+ * Copyright 2011 Level Four AB
  * 
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
@@ -26,15 +26,15 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Singleton;
-
 import se.l4.crayon.services.ManagedService;
 import se.l4.crayon.services.ServiceInfo;
 import se.l4.crayon.services.ServiceListener;
 import se.l4.crayon.services.ServiceManager;
 import se.l4.crayon.services.ServiceStatus;
+
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Singleton;
 
 /**
  * Implementation of {@link ServiceManager}.  
