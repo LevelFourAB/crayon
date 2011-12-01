@@ -23,9 +23,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import se.l4.crayon.annotation.Contribution;
-import se.l4.crayon.annotation.Dependencies;
 import se.l4.crayon.internal.CrayonImpl;
-import se.l4.crayon.internal.WrapperModule;
 
 import com.google.inject.Binder;
 import com.google.inject.Binding;
@@ -154,40 +152,6 @@ public abstract class CrayonBinder
 			binder.bind(
 				Key.get(Object.class, Names.named("crayon-module-" + count.incrementAndGet()))
 			).toInstance(module);
-			
-			Class<?> type = module.getClass();
-			while(type != null && type != Object.class)
-			{
-				Dependencies deps = type.getAnnotation(Dependencies.class);
-				if(deps != null)
-				{
-					for(Class<?> c : deps.value())
-					{
-						try
-						{
-							Object o = c.newInstance();
-							if(o instanceof Module)
-							{
-								binder.install((Module) o);
-							}
-							else
-							{
-								binder.install(new WrapperModule(o));
-							}
-						}
-						catch(InstantiationException e)
-						{
-							throw new ConfigurationException("Unable to create instance of " + c, e);
-						}
-						catch(IllegalAccessException e)
-						{
-							throw new ConfigurationException("Unable to create instance of " + c, e);
-						}
-					}
-				}
-				
-				type = type.getSuperclass();
-			}
 		}
 		
 		@Override

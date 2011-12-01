@@ -15,11 +15,9 @@
  */
 package se.l4.crayon.internal;
 
-import com.google.inject.Binder;
-
 import se.l4.crayon.Configurator;
-import se.l4.crayon.Environment;
-import se.l4.crayon.annotation.Description;
+
+import com.google.inject.AbstractModule;
 
 /**
  * Module that is always loaded, containing the base configuration and bindings
@@ -29,6 +27,7 @@ import se.l4.crayon.annotation.Description;
  *
  */
 public class InternalConfiguratorModule
+	extends AbstractModule
 {
 	private Configurator configurator;
 	
@@ -37,14 +36,10 @@ public class InternalConfiguratorModule
 		this.configurator = configurator;
 	}
 	
-	@Description
-	public void configure(Binder binder)
+	@Override
+	protected void configure()
 	{
 		// Reference to the configurator
-		binder.bind(Configurator.class).toInstance(configurator);
-		
-		// Bind the environment
-		Environment env = configurator.getEnvironment();
-		binder.bind(Environment.class).toInstance(env);
+		bind(Configurator.class).toInstance(configurator);
 	}
 }

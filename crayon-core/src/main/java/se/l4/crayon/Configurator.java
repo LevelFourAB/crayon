@@ -15,22 +15,23 @@
  */
 package se.l4.crayon;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import se.l4.crayon.annotation.Contribution;
+import se.l4.crayon.annotation.Shutdown;
+import se.l4.crayon.internal.InternalConfiguratorModule;
+import se.l4.crayon.internal.WrapperModule;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Stage;
-
-import se.l4.crayon.annotation.Contribution;
-import se.l4.crayon.annotation.Shutdown;
-import se.l4.crayon.internal.InternalConfiguratorModule;
-import se.l4.crayon.internal.WrapperModule;
 
 /**
  * Entry point for system, used for defining which modules should be used and
@@ -99,17 +100,6 @@ public class Configurator
 	}
 	
 	/**
-	 * Create a configurator in the given environment.
-	 * 
-	 * @param environment
-	 */
-	@Deprecated
-	public Configurator(Environment environment)
-	{
-		this(getStageFor(environment));
-	}
-	
-	/**
 	 * Create a new configurator in the specified stage.
 	 * 
 	 * @param stage
@@ -158,9 +148,11 @@ public class Configurator
 	 * 
 	 * @param autoStart
 	 */
-	public void setAutoStart(boolean autoStart)
+	public Configurator setAutoStart(boolean autoStart)
 	{
 		this.autoStart = autoStart;
+		
+		return this;
 	}
 	
 	/**
@@ -180,72 +172,13 @@ public class Configurator
 	}
 	
 	/**
-	 * Add a module instance.
-	 * 
-	 * @param instance
-	 * 		instance to add
-	 * @return
-	 * 		self
-	 * @deprecated
-	 * 		use @{link {@link #add(Object)}} instead
-	 */
-	@Deprecated
-	public Configurator addInstance(Object instance)
-	{
-		add(instance);
-		
-		return this;
-	}
-	
-	/**
-	 * Add a Guice module to the configurator, see
-	 * {@link #addGuiceModule(Class)}.
-	 * 
-	 * @param module
-	 * 		module instance
-	 * @return
-	 * 		self
-	 * @deprecated
-	 * 		use {@link #add(Object)} instead
-	 */
-	@Deprecated
-	public Configurator addGuiceModule(Module module)
-	{
-		logger.info("Adding: {}", module);
-		
-		modules.add(module);
-		
-		return this;
-	}
-	
-	/**
-	 * Add a Guice module to the configurator, used for backwards compatibility
-	 * with projects that only utilize Guice. Such modules will not have the
-	 * added benefits of description ordering.
-	 * 
-	 * @param type
-	 * 		base class for Guice module
-	 * @return
-	 * 		self
-	 * @deprecated
-	 * 		use {@link #add(Object)} instead
-	 */
-	@Deprecated
-	public Configurator addGuiceModule(Class<? extends Module> type)
-	{
-		add(type);
-		
-		return this;
-	}
-	
-	/**
 	 * Configure and start services.
 	 */
 	public void configure()
 	{
 		logger.info("Performing configuration and startup");
 		
-		List<Module> modules = new LinkedList<Module>();
+		List<Module> modules = new ArrayList<Module>();
 		for(Object m : this.modules)
 		{
 			if(m instanceof Class)
@@ -287,34 +220,6 @@ public class Configurator
 	}
 	
 	/**
-	 * Translate environment to Guice {@link Stage}.
-	 * 
-	 * @param environment
-	 * 		environment to translate
-	 * @return
-	 * 		suitable Guice stage
-	 */
-	private static Stage getStageFor(Environment environment)
-	{
-		return environment == Environment.PRODUCTION
-			? Stage.PRODUCTION
-			: Stage.DEVELOPMENT; 
-	}
-	
-	/**
-	 * Translate stage to environment.
-	 * 
-	 * @param stage
-	 * @return
-	 */
-	private static Environment getEnvironment(Stage stage)
-	{
-		return stage == Stage.PRODUCTION
-			? Environment.PRODUCTION
-			: Environment.DEVELOPMENT;
-	}
-	
-	/**
 	 * Get the injector that has been created.
 	 * 
 	 * @return
@@ -332,18 +237,6 @@ public class Configurator
 	{
 		injector.getInstance(Crayon.class)
 			.shutdown();
-	}
-	
-	/**
-	 * Get the environment of the configurator.
-	 * 
-	 * @return
-	 * 		environment
-	 */
-	@Deprecated
-	public Environment getEnvironment()
-	{
-		return getEnvironment(stage);
 	}
 	
 	/**
