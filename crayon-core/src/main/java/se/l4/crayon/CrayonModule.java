@@ -80,7 +80,24 @@ public abstract class CrayonModule
 	}
 	
 	/**
-	 * Bind a {@link Contributions} instance. 
+	 * Bind a {@link Contributions} instance. It will be bound so that the
+	 * instance is annotated with the specified annotation.
+	 * 
+	 * <p>
+	 * For example, calling this:
+	 * 
+	 * <pre>
+	 * bindContributions(Test.class)
+	 * </pre>
+	 * 
+	 * you can later access the instance via
+	 * <p>
+	 * class TestClass {
+	 * 	public TestClass({@literal @Test} Contributions contributions) {
+	 * 		...
+	 * 	}
+	 * }
+	 * </p>
 	 * 
 	 * @see CrayonBinder#bindContributions(Class)
 	 * @param annotation
