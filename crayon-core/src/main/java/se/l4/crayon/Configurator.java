@@ -16,7 +16,6 @@
 package se.l4.crayon;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -25,7 +24,6 @@ import org.slf4j.LoggerFactory;
 import se.l4.crayon.annotation.Contribution;
 import se.l4.crayon.annotation.Shutdown;
 import se.l4.crayon.internal.InternalConfiguratorModule;
-import se.l4.crayon.internal.WrapperModule;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -68,20 +66,17 @@ import com.google.inject.Stage;
  */
 public class Configurator
 {
-	/** Manifest key used for default module discovery. */
-	public static final String MANIFEST_KEY = "System-Modules";
-	
 	/** Logger used within the configurator. */
 	private Logger logger;
 	
 	/** The stage the built injector will be in. */
-	private Stage stage;
+	private final Stage stage;
 
 	/** List containing all the Guice modules. */
-	private List<Object> modules;
+	private final List<Object> modules;
 	
 	/** Internal module used by configurator. */
-	private InternalConfiguratorModule internalModule;
+	private final InternalConfiguratorModule internalModule;
 	/** Injector created via {@link #configure()}. */
 	private Injector injector;
 
@@ -108,7 +103,7 @@ public class Configurator
 	{
 		this.stage = stage;
 		
-		modules = new LinkedList<Object>();
+		modules = new ArrayList<Object>();
 		
 		// add default module
 		internalModule = new InternalConfiguratorModule(this);
@@ -125,11 +120,21 @@ public class Configurator
 	 * 
 	 * @param logger
 	 */
-	public void setLogger(Logger logger)
+	public Configurator setLogger(Logger logger)
 	{
 		this.logger = logger;
+		
+		return this;
 	}
 
+	/**
+	 * Set which parent injector to use. Using a parent injector will
+	 * cause {@link Injector#createChildInjector(Module...)} to be used
+	 * instead of {@link Guice#createInjector(Module...)}.
+	 * 
+	 * @param injector
+	 * @return
+	 */
 	public Configurator setParentInjector(Injector injector)
 	{
 		this.parentInjector = injector;
@@ -137,6 +142,11 @@ public class Configurator
 		return this;
 	}
 
+	/**
+	 * Get the current parent injector.
+	 * 
+	 * @return
+	 */
 	public Injector getParentInjector()
 	{
 		return parentInjector;
@@ -161,7 +171,7 @@ public class Configurator
 	 * @param instance
 	 * @return
 	 */
-	public Configurator add(Object instance)
+	public Configurator add(Module instance)
 	{
 		if(modules.add(instance))
 		{
@@ -172,9 +182,25 @@ public class Configurator
 	}
 	
 	/**
+	 * Add a module to this configurator.
+	 * 
+	 * @param module
+	 * @return
+	 */
+	public Configurator add(Class<? extends Module> module)
+	{
+		if(modules.add(module))
+		{
+			logger.info("Adding: {}", module);
+		}
+		
+		return this;
+	}
+	
+	/**
 	 * Configure and start services.
 	 */
-	public void configure()
+	public Injector configure()
 	{
 		logger.info("Performing configuration and startup");
 		
@@ -203,7 +229,7 @@ public class Configurator
 			}
 			else
 			{
-				modules.add(new WrapperModule(m));
+				throw new ConfigurationException("Got an instance of " + m.getClass() + ", but it does not seem to be a Guice module");
 			}
 		}
 		
@@ -217,6 +243,8 @@ public class Configurator
 				.getInstance(Crayon.class)
 				.start();
 		}
+		
+		return injector;
 	}
 	
 	/**

@@ -29,7 +29,7 @@ import com.google.inject.AbstractModule;
 public class InternalConfiguratorModule
 	extends AbstractModule
 {
-	private Configurator configurator;
+	private final Configurator configurator;
 	
 	public InternalConfiguratorModule(Configurator configurator)
 	{

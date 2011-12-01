@@ -24,6 +24,12 @@ import com.google.inject.Key;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
+/**
+ * Implementation of {@link Crayon}.
+ * 
+ * @author Andreas Holstenson
+ *
+ */
 @Singleton
 public class CrayonImpl
 	implements Crayon

@@ -29,6 +29,16 @@ Crayon crayon = injector.getInstance(Crayon.class);
 crayon.start();
 ```
 
+You can also use `Configurator` to create a your `Injector` in which case
+`Crayon.start()` will be called automatically.
+
+```java
+Injector injector = new Configurator(stage)
+	.add(Module.class)
+	.add(new OtherModule())
+	.configure();
+```
+
 ## Custom contributions
 
 It is possible to use any annotation as a marker for a contribution. This is useful when building libraries where more detailed control of contributions is needed. When a custom annotation is used the library author has full control over when the defined methods are run.
