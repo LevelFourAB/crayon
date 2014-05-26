@@ -21,8 +21,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import se.l4.crayon.annotation.Contribution;
-import se.l4.crayon.annotation.Shutdown;
 import se.l4.crayon.internal.InternalConfiguratorModule;
 
 import com.google.inject.AbstractModule;

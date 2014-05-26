@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.l4.crayon.annotation;
+package se.l4.crayon;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -22,21 +22,33 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation used for marking a method that it should be run as part of the
- * contribution process of a module. Methods that are marked need to be
- * public.
+ * Annotation that can be used to define the order of module configuration and
+ * contribution. This annotation takes several string that describe its
+ * preferred ordering.
+ * 
+ * <ul>
+ * 	<li>{@code before:name} - define that the method should run before {@code name}</li>
+ * 	<li>{@code after:name} - define that the method should run after {@code name}</li>
+ *  <li>
+ *  	{@code last} - define that a method should run last (depending on other 
+ *  	order-definitions)
+ *  </li>
+ *  <li>
+ *  	{@code first} - define that a method should run first (depending on other 
+ *  	order-definitions)
+ *  </li>
+ * </ul>
  * 
  * <p>
- * A method annotated will receive all of its parameters by means of injection
- * via Guice.
+ * When the name defined in the order can not be found it is ignored.
  * 
  * @author Andreas Holstenson
  *
  */
-@Target({ ElementType.METHOD, ElementType.TYPE })
+@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Contribution
+public @interface Order
 {
-	String name() default "";
+	String[] value();
 }

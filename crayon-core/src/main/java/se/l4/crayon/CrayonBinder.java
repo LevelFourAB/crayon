@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import se.l4.crayon.annotation.Contribution;
 import se.l4.crayon.internal.CrayonImpl;
 
 import com.google.inject.Binder;

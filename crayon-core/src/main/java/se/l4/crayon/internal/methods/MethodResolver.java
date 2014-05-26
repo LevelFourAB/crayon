@@ -24,8 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import se.l4.crayon.After;
 import se.l4.crayon.ConfigurationException;
-import se.l4.crayon.annotation.Order;
+import se.l4.crayon.Order;
 import se.l4.crayon.internal.DependencyResolver;
 
 /**
@@ -111,30 +112,13 @@ public class MethodResolver
 
 		for(Map.Entry<String, MethodDef> e : methods.entrySet())
 		{
-			String name = e.getKey();
 			MethodDef def = e.getValue();
 			
 			// Always add without any dependencies
 			resolver.add(def);
 			
-			// Handle dependencies due to method parameters
-			for(Class<?> c : def.getMethod().getParameterTypes())
-			{
-				if(c.isAnnotationPresent(Order.class))
-				{
-					Order order = c.getAnnotation(Order.class);
-					for(String s : order.value())
-					{
-						if(s.equals(name)) continue;
-						
-						handleOrderEntry(resolver, def, s);
-					}
-				}
-			}
-			
 			// Take care of order dependencies
-			String[] order = def.getOrder();
-			for(String s : order)
+			for(String s : def.getOrder())
 			{
 				handleOrderEntry(resolver, def, s);
 			}

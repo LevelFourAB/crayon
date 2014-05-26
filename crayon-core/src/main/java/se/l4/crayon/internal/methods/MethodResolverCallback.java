@@ -15,7 +15,7 @@
  */
 package se.l4.crayon.internal.methods;
 
-import se.l4.crayon.annotation.Order;
+import se.l4.crayon.Order;
 
 /**
  * Callback used for naming of methods, used to provide support for

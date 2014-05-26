@@ -25,10 +25,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import se.l4.crayon.ConfigurationException;
+import se.l4.crayon.Contribution;
 import se.l4.crayon.Contributions;
 import se.l4.crayon.Crayon;
-import se.l4.crayon.annotation.Contribution;
-import se.l4.crayon.annotation.Shutdown;
+import se.l4.crayon.Shutdown;
 import se.l4.crayon.internal.methods.MethodDef;
 import se.l4.crayon.internal.methods.MethodResolver;
 import se.l4.crayon.internal.methods.MethodResolverCallback;

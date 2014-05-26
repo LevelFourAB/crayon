@@ -15,9 +15,15 @@
  */
 package se.l4.crayon.internal.methods;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-import se.l4.crayon.annotation.Order;
+import se.l4.crayon.After;
+import se.l4.crayon.Before;
+import se.l4.crayon.Order;
 
 public class MethodDef
 {
@@ -40,11 +46,40 @@ public class MethodDef
 		return object;
 	}
 	
-	public String[] getOrder()
+	public List<String> getOrder()
 	{
-		Order order = method.getAnnotation(Order.class);
-		
-		return order == null ? new String[0] : order.value();
+		List<String> order = new ArrayList<String>();
+		handle(method.getAnnotations(), order);
+		return order;
+	}
+	
+	private void handle(Annotation[] annotations, List<String> order)
+	{
+		for(Annotation a : annotations)
+		{
+			if(a instanceof Order)
+			{
+				order.addAll(Arrays.asList(((Order) a).value()));
+			}
+			else if(a instanceof After)
+			{
+				for(String s : ((After) a).value())
+				{
+					order.add("after:" + s);
+				}
+			}
+			else if(a instanceof Before)
+			{
+				for(String s : ((Before) a).value())
+				{
+					order.add("before:" + s);
+				}
+			}
+			else
+			{
+				handle(a.annotationType().getAnnotations(), order);
+			}
+		}
 	}
 	
 	@Override

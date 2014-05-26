@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package se.l4.crayon.annotation;
+package se.l4.crayon;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -23,15 +23,20 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation used for marking a method that it should be run as part of the
- * shutdown process of a module.
+ * contribution process of a module. Methods that are marked need to be
+ * public.
  * 
- * @author andreas
+ * <p>
+ * A method annotated will receive all of its parameters by means of injection
+ * via Guice.
+ * 
+ * @author Andreas Holstenson
  *
  */
-@Target(ElementType.METHOD)
+@Target({ ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Shutdown
+public @interface Contribution
 {
 	String name() default "";
 }

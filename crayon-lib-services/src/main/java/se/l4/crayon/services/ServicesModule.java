@@ -20,9 +20,9 @@ import java.util.Collection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import se.l4.crayon.Contribution;
 import se.l4.crayon.CrayonModule;
-import se.l4.crayon.annotation.Contribution;
-import se.l4.crayon.annotation.Order;
+import se.l4.crayon.Order;
 import se.l4.crayon.services.internal.ServiceManagerImpl;
 
 /**
