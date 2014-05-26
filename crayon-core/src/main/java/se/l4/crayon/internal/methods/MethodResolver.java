@@ -24,9 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import se.l4.crayon.After;
 import se.l4.crayon.ConfigurationException;
-import se.l4.crayon.Order;
 import se.l4.crayon.internal.DependencyResolver;
 
 /**

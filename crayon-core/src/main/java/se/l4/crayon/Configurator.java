@@ -198,6 +198,7 @@ public class Configurator
 	/**
 	 * Configure and start services.
 	 */
+	@SuppressWarnings("rawtypes")
 	public Injector configure()
 	{
 		logger.info("Performing configuration and startup");
