@@ -19,7 +19,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import se.l4.crayon.After;
 import se.l4.crayon.Before;
@@ -49,11 +51,11 @@ public class MethodDef
 	public List<String> getOrder()
 	{
 		List<String> order = new ArrayList<String>();
-		handle(method.getAnnotations(), order);
+		handle(method.getAnnotations(), order, new HashSet<Class<? extends Annotation>>());
 		return order;
 	}
 	
-	private void handle(Annotation[] annotations, List<String> order)
+	private void handle(Annotation[] annotations, List<String> order, Set<Class<? extends Annotation>> visited)
 	{
 		for(Annotation a : annotations)
 		{
@@ -77,7 +79,10 @@ public class MethodDef
 			}
 			else
 			{
-				handle(a.annotationType().getAnnotations(), order);
+				if(visited.add(a.annotationType()))
+				{
+					handle(a.annotationType().getAnnotations(), order, visited);
+				}
 			}
 		}
 	}
