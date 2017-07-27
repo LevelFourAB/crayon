@@ -16,7 +16,7 @@ Methods are defined in Guice modules. Either by extending `CrayonModule` or by c
 
 ```java
 public void configure() {
-	CrayonBinder.newBinder(binder, this);
+  CrayonBinder.newBinder(binder, this);
 }
 ```
 
