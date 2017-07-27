@@ -15,6 +15,8 @@
  */
 package se.l4.crayon;
 
+import com.google.inject.Module;
+
 /**
  * Set of contributions. The contributions are bound via
  * {@link CrayonModule#bindContributions(Class)} or
@@ -30,4 +32,11 @@ public interface Contributions
 	 *
 	 */
 	void run();
+
+	/**
+	 * Run all contributions but activate the given modules first.
+	 *
+	 * @param modules
+	 */
+	void run(Module... modules);
 }

@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+import com.google.inject.Module;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
@@ -50,8 +51,7 @@ public class CrayonImpl
 	implements Crayon
 {
 	private static final Logger logger = LoggerFactory.getLogger(CrayonImpl.class);
-
-	protected static final Object[] EMPTY = new Object[0];
+	private static final Module[] EMPTY = new Module[0];
 
 	private final Set<Object> modules;
 	private final Injector injector;
@@ -120,7 +120,7 @@ public class CrayonImpl
 		return new Contributions()
 		{
 			@Override
-			public void run()
+			public void run(Module... modules)
 			{
 				MethodResolver resolver = new MethodResolver(
 					new MethodResolverCallback()
@@ -141,7 +141,21 @@ public class CrayonImpl
 					annotation
 				);
 
-				callMethods(resolver);
+				if(modules.length == 0)
+				{
+					callMethods(resolver);
+				}
+				else
+				{
+					Injector childInjector = injector.createChildInjector(modules);
+					callMethods(childInjector, resolver);
+				}
+			}
+
+			@Override
+			public void run()
+			{
+				run(EMPTY);
 			}
 
 			@Override
@@ -211,6 +225,11 @@ public class CrayonImpl
 	}
 
 	private void callMethods(MethodResolver resolver)
+	{
+		callMethods(injector, resolver);
+	}
+
+	private void callMethods(Injector injector, MethodResolver resolver)
 	{
 		for(Object c : modules)
 		{
