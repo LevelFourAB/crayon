@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Binder;
+import com.google.inject.Binding;
 import com.google.inject.Key;
 import com.google.inject.MembersInjector;
 import com.google.inject.Module;
@@ -32,6 +33,7 @@ import com.google.inject.binder.AnnotatedConstantBindingBuilder;
 import com.google.inject.binder.LinkedBindingBuilder;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.spi.Message;
+import com.google.inject.spi.ProvisionListener;
 import com.google.inject.spi.TypeConverter;
 import com.google.inject.spi.TypeListener;
 
@@ -292,6 +294,14 @@ public abstract class CrayonModule
 			TypeListener listener)
 	{
 		binder.bindListener(typeMatcher, listener);
+	}
+
+	/**
+	 * @see Binder#bindListener(Matcher, ProvisionListener...)
+	 */
+	protected void bindListener(Matcher<? super Binding<?>> bindingMatcher, ProvisionListener... listener)
+	{
+		binder().bindListener(bindingMatcher, listener);
 	}
 
 	@Override
