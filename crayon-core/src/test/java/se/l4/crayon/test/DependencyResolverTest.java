@@ -1,6 +1,6 @@
 /*
  * Copyright 2008 Andreas Holstenson
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,10 +15,12 @@
  */
 package se.l4.crayon.test;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
 import java.util.Set;
 
-import org.testng.Assert;
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 import se.l4.crayon.internal.DependencyResolver;
 
@@ -31,17 +33,16 @@ public class DependencyResolverTest
 		String B = "B";
 		String C = "C";
 		String D = "D";
-		
+
 		DependencyResolver<String> resolver = new DependencyResolver<String>();
-		
+
 		resolver.addDependency(A, B);
 		resolver.addDependency(C, D);
 		resolver.addDependency(B, D);
 		resolver.addDependency(C, A);
-		
+
 		Set<String> result = resolver.getOrder();
-		
-		Assert.assertEquals(result.toArray(), new Object[] { D, B, A, C }, 
-			"Arrays are not equal");
+
+		assertThat(result.toArray(), is(new Object[] { D, B, A, C }));
 	}
 }

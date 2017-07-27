@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 
 import javax.inject.Qualifier;
 
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
