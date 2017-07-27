@@ -69,6 +69,24 @@ public class CrayonImpl
 		performContributions();
 	}
 
+	private static String findName(MethodDef def)
+	{
+		Method method = def.getMethod();
+		Named named = method.getAnnotation(Named.class);
+		if(named != null)
+		{
+			return named.value();
+		}
+
+		javax.inject.Named named2 = method.getAnnotation(javax.inject.Named.class);
+		if(named2 != null)
+		{
+			return named2.value();
+		}
+
+		return null;
+	}
+
 	private static String name(Method method, Annotation annotation)
 	{
 		if(method == null) return null;
@@ -131,7 +149,11 @@ public class CrayonImpl
 							Annotation a = def.getMethod()
 								.getAnnotation(annotation);
 
-							String s = name(name, a);
+							String s = findName(def);
+							if(s == null)
+							{
+								s = name(name, a);
+							}
 
 							return s == null || "".equals(s)
 								? def.getObject().getClass() + "-" + def.getMethod().getName()
@@ -180,10 +202,13 @@ public class CrayonImpl
 				@Override
 				public String getName(MethodDef def)
 				{
-					String s =
-						def.getMethod()
+					String s = findName(def);
+					if(s == null)
+					{
+						s = def.getMethod()
 							.getAnnotation(Contribution.class)
 							.name();
+					}
 
 					return "".equals(s)
 						? def.getObject().getClass() + "-" + def.getMethod().getName()
@@ -208,10 +233,13 @@ public class CrayonImpl
 				@Override
 				public String getName(MethodDef def)
 				{
-					String s =
-						def.getMethod()
+					String s = findName(def);
+					if(s == null)
+					{
+						s =	def.getMethod()
 							.getAnnotation(Shutdown.class)
 							.name();
+					}
 
 					return "".equals(s)
 						? def.getObject().getClass() + "-" + def.getMethod().getName()
