@@ -1,6 +1,6 @@
 /*
  * Copyright 2011 Level Four AB
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,10 +16,10 @@
 package se.l4.crayon;
 
 /**
- * Set of contributions. The contributions are bound via 
- * {@link CrayonModule#bindContributions(Class)} or 
+ * Set of contributions. The contributions are bound via
+ * {@link CrayonModule#bindContributions(Class)} or
  * {@link CrayonBinder#bindContributions(Class)}.
- *  
+ *
  * @author Andreas Holstenson
  *
  */
@@ -27,7 +27,7 @@ public interface Contributions
 {
 	/**
 	 * Run all contributions.
-	 * 
+	 *
 	 */
 	void run();
 }

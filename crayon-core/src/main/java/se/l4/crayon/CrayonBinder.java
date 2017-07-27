@@ -1,6 +1,6 @@
 /*
  * Copyright 2011 Level Four AB
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import se.l4.crayon.internal.CrayonImpl;
-
 import com.google.inject.Binder;
 import com.google.inject.Binding;
 import com.google.inject.Inject;
@@ -36,28 +34,30 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
+import se.l4.crayon.internal.CrayonImpl;
+
 /**
  * Class used to add support for contributions and other Crayon features to
  * any Guice module. When the binder has been used any methods annotated with
  * {@link Contribution} will be run after the creation of the {@link Injector}.
- * 
+ *
  * <p>
  * Example usage:
  * <pre>
  * public class SampleModule implements Module {
  * 	public void configure(Binder binder) {
  * 		CrayonBinder.newBinder(binder, this); // bind own instance
- * 
+ *
  * 		// any other bindings
  * 	}
- * 
+ *
  * 	{@literal @Contribution}
  * 	public void sampleContribution(ContributionReceiver r) {
  * 		r.addEntry("test");
  * 	}
  * }
  * </pre>
- * 
+ *
  * @author Andreas Holstenson
  * @see CrayonModule
  */
@@ -65,10 +65,10 @@ public abstract class CrayonBinder
 {
 	public static final TypeLiteral<Set<Object>> TYPE =
 		new TypeLiteral<Set<Object>>() {};
-		
+
 	public static final Key<Set<Object>> KEY
 		= Key.get(TYPE, Names.named("crayon-modules"));
-		
+
 	public static CrayonBinder newBinder(Binder binder)
 	{
 		binder = binder.skipSources(CrayonBinder.class, RealBinder.class);
@@ -77,7 +77,7 @@ public abstract class CrayonBinder
 		binder.install(b);
 		return b;
 	}
-	
+
 	public static CrayonBinder newBinder(Binder binder, Module module)
 	{
 		binder = binder.skipSources(CrayonBinder.class, RealBinder.class);
@@ -87,22 +87,22 @@ public abstract class CrayonBinder
 		binder.install(b);
 		return b;
 	}
-	
+
 	public abstract void module(Object module);
 
 	/**
 	 * Bind an instance of {@link Contributions}.
-	 * 
+	 *
 	 * @param annotation
 	 */
 	public abstract void bindContributions(Class<? extends Annotation> annotation);
-	
+
 	private static class RealBinder
 		extends CrayonBinder
 		implements Module, Provider<Set<Object>>
 	{
 		private static final AtomicInteger count = new AtomicInteger();
-		
+
 		private final Binder binder;
 		private List<Provider<?>> providers;
 
@@ -110,19 +110,20 @@ public abstract class CrayonBinder
 		{
 			this.binder = binder;
 		}
-		
+
+		@Override
 		public void configure(Binder binder)
 		{
 			binder.bind(KEY).toProvider(this);
 			binder.bind(Crayon.class).to(CrayonImpl.class)
 				.asEagerSingleton();
 		}
-		
+
 		@Inject
 		public void setup(Injector injector)
 		{
 			providers = new LinkedList<Provider<?>>();
-			
+
 			for(Binding<?> b : injector.findBindingsByType(TypeLiteral.get(Object.class)))
 			{
 				Key<?> key = b.getKey();
@@ -134,6 +135,7 @@ public abstract class CrayonBinder
 			}
 		}
 
+		@Override
 		public Set<Object> get()
 		{
 			Set<Object> result = new HashSet<Object>();
@@ -141,10 +143,10 @@ public abstract class CrayonBinder
 			{
 				result.add(p.get());
 			}
-			
+
 			return result;
 		}
-		
+
 		@Override
 		public void module(Object module)
 		{
@@ -152,7 +154,7 @@ public abstract class CrayonBinder
 				Key.get(Object.class, Names.named("crayon-module-" + count.incrementAndGet()))
 			).toInstance(module);
 		}
-		
+
 		@Override
 		public void bindContributions(final Class<? extends Annotation> annotation)
 		{
@@ -167,7 +169,7 @@ public abstract class CrayonBinder
 					{
 						this.crayon = crayon;
 					}
-					
+
 					@Override
 					public Contributions get()
 					{

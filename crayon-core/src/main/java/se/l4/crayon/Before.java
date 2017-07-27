@@ -10,16 +10,16 @@ import java.lang.annotation.Target;
  * Variation of {@link Order} where all dependencies are treated as
  * {@code before:name}. Useful when the name of a service is a constant in
  * a module.
- * 
+ *
  * <p>
  * Example:
- * 
+ *
  * <pre>
  * {@literal @Before(OtherModule.SERVICE)}
  * {@literal @Contribution}
  * public void contributeStuff() {}
  * </pre>
- * 
+ *
  * @author Andreas Holstenson
  *
  */

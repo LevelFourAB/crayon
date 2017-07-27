@@ -1,6 +1,6 @@
 /*
  * Copyright 2011 Level Four AB
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -38,7 +38,7 @@ import com.google.inject.spi.TypeListener;
 /**
  * Module that can be used that works like {@link AbstractModule} but uses
  * {@link CrayonBinder} as well.
- *  
+ *
  * @author Andreas Holstenson
  *
  */
@@ -48,11 +48,12 @@ public abstract class CrayonModule
 	private Binder binder;
 	private CrayonBinder crayon;
 
+	@Override
 	public final synchronized void configure(Binder builder)
 	{
 		binder = builder.skipSources(CrayonModule.class);
 		crayon = CrayonBinder.newBinder(binder, this);
-		
+
 		configure();
 	}
 
@@ -68,28 +69,28 @@ public abstract class CrayonModule
 	{
 		return binder;
 	}
-	
+
 	/**
 	 * Get the {@link CrayonBinder} for this module.
-	 * 
+	 *
 	 * @return
 	 */
 	protected CrayonBinder crayon()
 	{
 		return crayon;
 	}
-	
+
 	/**
 	 * Bind a {@link Contributions} instance. It will be bound so that the
 	 * instance is annotated with the specified annotation.
-	 * 
+	 *
 	 * <p>
 	 * For example, calling this:
-	 * 
+	 *
 	 * <pre>
 	 * bindContributions(Test.class)
 	 * </pre>
-	 * 
+	 *
 	 * you can later access the instance via
 	 * <p>
 	 * class TestClass {
@@ -98,7 +99,7 @@ public abstract class CrayonModule
 	 * 	}
 	 * }
 	 * </p>
-	 * 
+	 *
 	 * @see CrayonBinder#bindContributions(Class)
 	 * @param annotation
 	 */
@@ -106,7 +107,7 @@ public abstract class CrayonModule
 	{
 		crayon.bindContributions(annotation);
 	}
-	
+
 	/**
 	 * @see Binder#bindScope(Class, Scope)
 	 */
@@ -292,13 +293,13 @@ public abstract class CrayonModule
 	{
 		binder.bindListener(typeMatcher, listener);
 	}
-	
+
 	@Override
 	public int hashCode()
 	{
 		return getClass().hashCode();
 	}
-	
+
 	@Override
 	public boolean equals(Object obj)
 	{

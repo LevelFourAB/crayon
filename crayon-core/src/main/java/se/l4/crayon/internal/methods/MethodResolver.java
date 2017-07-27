@@ -1,6 +1,6 @@
 /*
  * Copyright 2011 Level Four AB
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -30,33 +30,33 @@ import se.l4.crayon.internal.DependencyResolver;
 /**
  * Class for discovering methods annotated with a special annotation and the
  * order they should be invoked in.
- * 
+ *
  * @author Andreas Holstenson
  *
  */
 public class MethodResolver
 {
 	private HashSet<Class<?>> classes;
-	
+
 	private Map<String, MethodDef> methods;
 	private Map<Class<?>, List<MethodDef>> defs;
-	
+
 	private Class<? extends Annotation>[] annotations;
 	private MethodResolverCallback callback;
-	
+
 	public MethodResolver(
 		MethodResolverCallback callback,
 		Class<? extends Annotation>... annotations)
 	{
 		this.annotations = annotations;
 		this.callback = callback;
-		
+
 		methods = new HashMap<String, MethodDef>();
 		defs = new HashMap<Class<?>, List<MethodDef>>();
-		
+
 		classes = new HashSet<Class<?>>();
 	}
-	
+
 	public void add(Object instance)
 	{
 		Class<?> type = instance.getClass();
@@ -65,11 +65,11 @@ public class MethodResolver
 		{
 			return;
 		}
-		
+
 		// Otherwise create an instance and loop through methods
 		Method[] declared = type.getMethods();
 		List<MethodDef> defs = getMethodDefs(type);
-		
+
 		_outer:
 		for(Method m : declared)
 		{
@@ -80,7 +80,7 @@ public class MethodResolver
 					continue _outer;
 				}
 			}
-			
+
 			MethodDef def = new MethodDef(instance, m);
 			String name = callback.getName(def);
 
@@ -89,7 +89,7 @@ public class MethodResolver
 			defs.add(def);
 		}
 	}
-	
+
 	private List<MethodDef> getMethodDefs(Class<?> c)
 	{
 		List<MethodDef> result = defs.get(c);
@@ -99,10 +99,10 @@ public class MethodResolver
 			result = new LinkedList<MethodDef>();
 			defs.put(c, result);
 		}
-		
+
 		return result;
 	}
-	
+
 	public Set<MethodDef> getOrder()
 	{
 		DependencyResolver<MethodDef> resolver =
@@ -111,17 +111,17 @@ public class MethodResolver
 		for(Map.Entry<String, MethodDef> e : methods.entrySet())
 		{
 			MethodDef def = e.getValue();
-			
+
 			// Always add without any dependencies
 			resolver.add(def);
-			
+
 			// Take care of order dependencies
 			for(String s : def.getOrder())
 			{
 				handleOrderEntry(resolver, def, s);
 			}
 		}
-		
+
 		return resolver.getOrder();
 	}
 
@@ -130,7 +130,7 @@ public class MethodResolver
 		if(s.startsWith("before:"))
 		{
 			s = s.substring(7);
-			
+
 			MethodDef d = methods.get(s);
 			if(d != null)
 			{
@@ -140,7 +140,7 @@ public class MethodResolver
 		else if(s.startsWith("after:"))
 		{
 			s = s.substring(6);
-			
+
 			MethodDef d = methods.get(s);
 			if(d != null)
 			{
@@ -160,7 +160,7 @@ public class MethodResolver
 						break;
 					}
 				}
-				
+
 				if(ok)
 				{
 					resolver.addDependency(def, d);
@@ -180,7 +180,7 @@ public class MethodResolver
 						break;
 					}
 				}
-				
+
 				if(ok)
 				{
 					resolver.addDependency(d, def);
@@ -189,10 +189,10 @@ public class MethodResolver
 		}
 		else
 		{
-			throw new ConfigurationException("Invalid order `" + s 
-				+ "` in " + def.getMethod().getName() + " (" 
+			throw new ConfigurationException("Invalid order `" + s
+				+ "` in " + def.getMethod().getName() + " ("
 				+ def.getMethod().getDeclaringClass() + ")");
 		}
 	}
-	
+
 }

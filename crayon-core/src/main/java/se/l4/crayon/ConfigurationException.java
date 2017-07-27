@@ -1,6 +1,6 @@
 /*
  * Copyright 2011 Level Four AB
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,7 +17,7 @@ package se.l4.crayon;
 
 /**
  * Exception thrown on failure in configuration of system.
- * 
+ *
  * @author Andreas Holstenson
  *
  */
@@ -44,5 +44,5 @@ public class ConfigurationException
 	{
 		super(cause);
 	}
-	
+
 }

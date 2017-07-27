@@ -1,6 +1,6 @@
 /*
  * Copyright 2011 Level Four AB
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,14 +15,14 @@
  */
 package se.l4.crayon.internal;
 
-import se.l4.crayon.Configurator;
-
 import com.google.inject.AbstractModule;
+
+import se.l4.crayon.Configurator;
 
 /**
  * Module that is always loaded, containing the base configuration and bindings
  * to support the system. This includes bindings to the {@link Configurator}.
- * 
+ *
  * @author Andreas Holstenson
  *
  */
@@ -30,12 +30,12 @@ public class InternalConfiguratorModule
 	extends AbstractModule
 {
 	private final Configurator configurator;
-	
+
 	public InternalConfiguratorModule(Configurator configurator)
 	{
 		this.configurator = configurator;
 	}
-	
+
 	@Override
 	protected void configure()
 	{

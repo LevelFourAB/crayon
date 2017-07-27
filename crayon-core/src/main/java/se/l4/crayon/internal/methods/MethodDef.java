@@ -1,6 +1,6 @@
 /*
  * Copyright 2011 Level Four AB
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,30 +31,30 @@ public class MethodDef
 {
 	private final Object object;
 	private final Method method;
-	
+
 	public MethodDef(Object object, Method method)
 	{
 		this.object = object;
 		this.method = method;
 	}
-	
+
 	public Method getMethod()
 	{
 		return method;
 	}
-	
+
 	public Object getObject()
 	{
 		return object;
 	}
-	
+
 	public List<String> getOrder()
 	{
 		List<String> order = new ArrayList<String>();
 		handle(method.getAnnotations(), order, new HashSet<Class<? extends Annotation>>());
 		return order;
 	}
-	
+
 	private void handle(Annotation[] annotations, List<String> order, Set<Class<? extends Annotation>> visited)
 	{
 		for(Annotation a : annotations)
@@ -86,7 +86,7 @@ public class MethodDef
 			}
 		}
 	}
-	
+
 	@Override
 	public String toString()
 	{

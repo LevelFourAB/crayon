@@ -1,6 +1,6 @@
 /*
  * Copyright 2011 Level Four AB
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,7 +20,7 @@ import se.l4.crayon.Order;
 /**
  * Callback used for naming of methods, used to provide support for
  * {@link Order} in the {@link MethodResolver}.
- * 
+ *
  * @author Andreas Holstenson
  *
  */
@@ -28,7 +28,7 @@ public interface MethodResolverCallback
 {
 	/**
 	 * Name the method definition so it can be used in {@link Order}.
-	 * 
+	 *
 	 * @param method
 	 * 		definition to name
 	 * @return

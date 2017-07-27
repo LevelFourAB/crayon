@@ -1,6 +1,6 @@
 /*
  * Copyright 2011 Level Four AB
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -25,11 +25,11 @@ import java.lang.annotation.Target;
  * Annotation used for marking a method that it should be run as part of the
  * contribution process of a module. Methods that are marked need to be
  * public.
- * 
+ *
  * <p>
  * A method annotated will receive all of its parameters by means of injection
  * via Guice.
- * 
+ *
  * @author Andreas Holstenson
  *
  */
