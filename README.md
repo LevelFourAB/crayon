@@ -2,7 +2,7 @@ Crayon is an extension to [Google Guice](http://code.google.com/p/google-guice/)
 
 The main library is `crayon-core` and is available in Maven-central:
 
-```
+```xml
 <dependency>
   <groupId>se.l4.crayon</groupId>
   <artifactId>crayon-core</artifactId>
@@ -31,7 +31,7 @@ public void contributeService(ServiceManager manager, TestService service) {
 
 The order at which contributions are invoked can be configured:
 
-```
+```java
 @Contribution
 @Named("service:test")
 public void contributeService(ServiceManager manager, TestService service) {
@@ -100,6 +100,7 @@ public class StorageModule extends CrayonModule {
     contributions.run();
   }
 }
+```
 
 ```java
 public class StorageExtensionModule extends CrayonModule {
