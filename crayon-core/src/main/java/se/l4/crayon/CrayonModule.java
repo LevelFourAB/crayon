@@ -53,10 +53,27 @@ public abstract class CrayonModule
 	@Override
 	public final synchronized void configure(Binder builder)
 	{
-		binder = builder.skipSources(CrayonModule.class);
+		binder = setupBinder(
+			builder.skipSources(CrayonModule.class)
+		);
 		crayon = CrayonBinder.newBinder(binder, this);
 
 		configure();
+	}
+
+	/**
+	 * Setup the given binder for use within this module. This is intended
+	 * for abstract subclasses of this module so that they can use things
+	 * such as {@link Binder#skipSources(Class...)}.
+	 * 
+	 * @param binder
+	 *   the binder to setup
+	 * @return
+	 *   the binder used by the module
+	 */
+	protected Binder setupBinder(Binder binder)
+	{
+		return binder;
 	}
 
 	/**
