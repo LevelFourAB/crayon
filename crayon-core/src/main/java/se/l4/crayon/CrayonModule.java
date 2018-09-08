@@ -16,7 +16,6 @@
 package se.l4.crayon;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Binder;
@@ -79,7 +78,9 @@ public abstract class CrayonModule
 	/**
 	 * Perform configuration.
 	 */
-	protected abstract void configure();
+	protected void configure()
+	{
+	}
 
 	/**
 	 * Get the {@link Binder} in use.
@@ -215,21 +216,6 @@ public abstract class CrayonModule
 	{
 		binder.requestStaticInjection(types);
 	}
-
-	/* if[AOP] */
-	/**
-	 * @see Binder#bindInterceptor(com.google.inject.matcher.Matcher,
-	 *      com.google.inject.matcher.Matcher,
-	 *      org.aopalliance.intercept.MethodInterceptor[])
-	 */
-	protected void bindInterceptor(Matcher<? super Class<?>> classMatcher,
-			Matcher<? super Method> methodMatcher,
-			org.aopalliance.intercept.MethodInterceptor... interceptors)
-	{
-		binder.bindInterceptor(classMatcher, methodMatcher, interceptors);
-	}
-
-	/* end[AOP] */
 
 	/**
 	 * Adds a dependency from this module to {@code key}. When the injector is

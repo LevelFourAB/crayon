@@ -20,9 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.function.Function;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -30,6 +28,9 @@ import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import se.l4.crayon.ConfigurationException;
 import se.l4.crayon.Contribution;
@@ -50,6 +51,8 @@ import se.l4.crayon.internal.methods.MethodResolverCallback;
 public class CrayonImpl
 	implements Crayon
 {
+	private static final Function<Method, String> JAVAX_NAME_FINDER = createJavaxInjectNameFinder();
+
 	private static final Logger logger = LoggerFactory.getLogger(CrayonImpl.class);
 	private static final Module[] EMPTY = new Module[0];
 
@@ -69,6 +72,90 @@ public class CrayonImpl
 		performContributions();
 	}
 
+	/**
+	 * Create a function that can be applied on a method to get any value
+	 * stored in javax.inject.Named. This is used as a workaround due to the
+	 * Java 9 module system and javax.inject being unlikely to be moduralized.
+	 * 
+	 * @return
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private static Function<Method, String> createJavaxInjectNameFinder()
+	{
+		try
+		{
+			Class c = Class.forName("javax.inject.Named");
+			Method valueMethod = c.getMethod("value");
+
+			return v -> {
+				Annotation a = v.getAnnotation(c);
+				
+				// No annotation found so no name
+				if(a == null) return null;
+
+				// Invoke the value method
+				return invoke(valueMethod, a);
+			};
+		}
+		catch(ClassNotFoundException | NoSuchMethodException | SecurityException e)
+		{
+			return v -> null;
+		}
+	}
+
+	/**
+	 * Invoke the given method and raise a custom exception if unable to
+	 * access it on the annotation.
+	 * 
+	 * @param method
+	 *   the method to invoke
+	 * @param annotation
+	 *   the annotation to invoke on
+	 * @return
+	 *   the result of the invocation
+	 */
+	private static String invoke(Method method, Annotation annotation)
+	{
+		if(method == null) return null;
+
+		try
+		{
+			return (String) method.invoke(annotation);
+		}
+		catch(IllegalArgumentException | IllegalAccessException | InvocationTargetException e)
+		{
+			throw new RuntimeException("Could not access the " + method.getName() + "() of " + annotation + "; " + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * Get a method from the given annotation.
+	 * 
+	 * @param annotation
+	 *   annotation type to get method from
+	 * @param name
+	 *   the name of the method
+	 */
+	private static Method getMethod(Class<? extends Annotation> annotation, String name)
+	{
+		try
+		{
+			Method m = annotation.getMethod(name);
+			return m.getReturnType() == String.class ? m : null;
+		}
+		catch(SecurityException | NoSuchMethodException e)
+		{
+			return null;
+		}
+	}
+
+	/**
+	 * Find the name if annotated with the Guice or javax.inject Named 
+	 * annotation.
+	 * 
+	 * @param def
+	 *   the definition of the method
+	 */
 	private static String findName(MethodDef def)
 	{
 		Method method = def.getMethod();
@@ -78,50 +165,7 @@ public class CrayonImpl
 			return named.value();
 		}
 
-		javax.inject.Named named2 = method.getAnnotation(javax.inject.Named.class);
-		if(named2 != null)
-		{
-			return named2.value();
-		}
-
-		return null;
-	}
-
-	private static String name(Method method, Annotation annotation)
-	{
-		if(method == null) return null;
-
-		try
-		{
-			return (String) method.invoke(annotation);
-		}
-		catch(IllegalArgumentException e)
-		{
-		}
-		catch(IllegalAccessException e)
-		{
-		}
-		catch(InvocationTargetException e)
-		{
-		}
-
-		return null;
-	}
-
-	private Method getMethod(Class<? extends Annotation> annotation)
-	{
-		try
-		{
-			return annotation.getMethod("name");
-		}
-		catch(SecurityException e)
-		{
-		}
-		catch(NoSuchMethodException e)
-		{
-		}
-
-		return null;
+		return JAVAX_NAME_FINDER.apply(method);
 	}
 
 	/**
@@ -131,9 +175,9 @@ public class CrayonImpl
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public Contributions createContributions(final Class<? extends Annotation> annotation)
+	public Contributions createContributions(Class<? extends Annotation> annotation)
 	{
-		final Method name = getMethod(annotation);
+		Method reflectionName = getMethod(annotation, "name");
 
 		return new Contributions()
 		{
@@ -152,9 +196,9 @@ public class CrayonImpl
 							String s = findName(def);
 							if(s == null)
 							{
-								s = name(name, a);
+								// Resolve via the name value on the attribute
+								s = invoke(reflectionName, a);
 							}
-
 							return s == null || "".equals(s)
 								? def.getObject().getClass() + "-" + def.getMethod().getName()
 								: s;

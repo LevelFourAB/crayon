@@ -15,17 +15,18 @@
  */
 package se.l4.crayon;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Stage;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import se.l4.crayon.internal.InternalConfiguratorModule;
 
@@ -198,7 +199,7 @@ public class Configurator
 	/**
 	 * Configure and start services.
 	 */
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Injector configure()
 	{
 		logger.info("Performing configuration and startup");
@@ -210,13 +211,9 @@ public class Configurator
 			{
 				try
 				{
-					m = ((Class) m).newInstance();
+					m = ((Class) m).getDeclaredConstructor().newInstance();
 				}
-				catch(InstantiationException e)
-				{
-					throw new ConfigurationException("Unable to create module, a public no-args constructor required; " + e.getMessage(), e);
-				}
-				catch(IllegalAccessException e)
+				catch(NoSuchMethodException | InvocationTargetException | IllegalAccessException| InstantiationException | IllegalArgumentException | SecurityException e)
 				{
 					throw new ConfigurationException("Unable to create module, a public no-args constructor required; " + e.getMessage(), e);
 				}
