@@ -1,3 +1,5 @@
+# Crayon
+
 Crayon is an extension to [Google Guice](https://github.com/google/guice) that provides the ability to define contribution methods. A contribution method is called after the Guice Injector has been created and can use any binding defined.
 
 The main library is `crayon-core` and is available in Maven-central:
@@ -12,11 +14,28 @@ The main library is `crayon-core` and is available in Maven-central:
 
 ## Defining a contribution
 
-Methods are defined in Guice modules. Either by extending `CrayonModule` or by creating a `CrayonBinder` directly:
+Methods are defined in Guice modules. Either by extending `CrayonModule` or by creating a `CrayonBinder` directly.
+
+Extending `CrayonModule`:
 
 ```java
-public void configure() {
-  CrayonBinder.newBinder(binder, this);
+public class TestModule extends CrayonModule {
+  public void configure() {
+    // Do normal Guice configuration here
+  }
+}
+```
+
+Using `CrayonBinder`:
+
+```java
+public class TestModule extends AbstractModule {
+  public void configure() {
+    // Activate support for contributions
+    CrayonBinder.newBinder(binder, this);
+
+    // Do normal Guice configuration here
+  }
 }
 ```
 
@@ -40,7 +59,7 @@ public void contributeService(ServiceManager manager, TestService service) {
 
 @Contribution
 @Before("service:test")
-public contributeOtherService(ServiceManager manage, OtherService service) {
+public contributeOtherService(ServiceManager manager, OtherService service) {
   // This will run before the contribution named "service:test" 
   manager.add(service);
 }
