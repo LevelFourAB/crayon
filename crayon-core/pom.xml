@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>crayon-core</artifactId>
-	<packaging>jar</packaging>
+	<packaging>multi-release-jar</packaging>
 	<name>${project.artifactId}</name>
 
 	<dependencies>

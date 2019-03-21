@@ -26,8 +26,10 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<slf4j-version>1.8.0-beta4</slf4j-version>
-	</properties>
 
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
 
 	<!-- License -->
 	<licenses>
@@ -63,42 +65,48 @@
 	</dependencies>
 
 	<build>
+		<extensions>
+			<extension>
+				<groupId>pw.krejci</groupId>
+				<artifactId>multi-release-jar-maven-plugin</artifactId>
+				<version>0.1.5</version>
+			</extension>
+		</extensions>
+
 		<plugins>
+			<plugin>
+				<groupId>pw.krejci</groupId>
+				<artifactId>multi-release-jar-maven-plugin</artifactId>
+				<version>0.1.5</version>
+				<configuration>
+					<mainModuleInfo>9</mainModuleInfo>
+				</configuration>
+			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.0</version>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>3.0.0-M2</version>
 				<executions>
 					<execution>
-						<id>default-compile</id>
-						<configuration>
-							<!-- compile everything to ensure module-info contains right entries -->
-							<release>9</release>
-						</configuration>
-					</execution>
-					<execution>
-						<id>base-compile</id>
+						<id>java-version-check</id>
 						<goals>
-							<goal>compile</goal>
+						<goal>enforce</goal>
 						</goals>
-						<!-- recompile everything for target VM except the module-info.java -->
 						<configuration>
-							<excludes>
-								<exclude>module-info.java</exclude>
-							</excludes>
+							<rules>
+								<requireJavaVersion>
+									<version>9</version>
+								</requireJavaVersion>
+							</rules>
 						</configuration>
 					</execution>
 				</executions>
-				<!-- defaults for compile and testCompile -->
-				<configuration>
-					<!-- Only required when JAVA_HOME isn't at least Java 9 and when haven't configured the maven-toolchains-plugin -->
-					<jdkToolchain>
-						<version>8</version>
-					</jdkToolchain>
-					<release>8</release>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
@@ -133,7 +141,9 @@
 									<goal>jar</goal>
 								</goals>
 								<configuration>
-									<additionalparam>-Xdoclint:none</additionalparam>
+									<source>8</source>
+									<javadocVersion>1.8</javadocVersion>
+									<doclint>none</doclint>
 								</configuration>
 							</execution>
 						</executions>
