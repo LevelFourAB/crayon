@@ -1,6 +1,6 @@
 /*
  * Copyright 2011 Level Four AB
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,7 +28,7 @@ import se.l4.crayon.services.internal.ServiceManagerImpl;
 /**
  * Module configuration for services. Binds {@link ServiceManager} to its
  * default implementation.
- * 
+ *
  * @author Andreas Holstenson
  *
  */
@@ -41,22 +41,22 @@ public class ServicesModule
 		// Services
 		bind(ServiceManager.class).to(ServiceManagerImpl.class);
 	}
-	
+
 	@Contribution(name="services")
 	@Order("last")
 	public void startServices(ServiceManager manager)
 	{
 		manager.startAll();
-		
+
 		Collection<ServiceInfo> info = manager.getInfo();
 		if(info.isEmpty())
 		{
 			return;
 		}
-		
+
 		Logger logger = LoggerFactory.getLogger(ServiceManager.class);
 		logger.info("Service status:");
-		
+
 		for(ServiceInfo i : info)
 		{
 			logger.info(i.toString());

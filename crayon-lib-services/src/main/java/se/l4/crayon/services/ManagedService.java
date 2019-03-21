@@ -1,6 +1,6 @@
 /*
  * Copyright 2011 Level Four AB
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,7 +19,7 @@ package se.l4.crayon.services;
  * Managed service, service that is started/stopped by the system kernel.
  * Should be marked as a singleton (via {@link com.google.inject.Singleton}
  * annotation).
- * 
+ *
  * @author Andreas Holstenson
  *
  */
@@ -27,7 +27,7 @@ public interface ManagedService
 {
 	/** Start service. */
 	void start() throws Exception;
-	
+
 	/** Stop service. */
 	void stop() throws Exception;
 }

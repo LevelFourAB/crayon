@@ -64,7 +64,7 @@ public abstract class CrayonModule
 	 * Setup the given binder for use within this module. This is intended
 	 * for abstract subclasses of this module so that they can use things
 	 * such as {@link Binder#skipSources(Class...)}.
-	 * 
+	 *
 	 * @param binder
 	 *   the binder to setup
 	 * @return

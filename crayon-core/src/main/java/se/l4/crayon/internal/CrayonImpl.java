@@ -76,7 +76,7 @@ public class CrayonImpl
 	 * Create a function that can be applied on a method to get any value
 	 * stored in javax.inject.Named. This is used as a workaround due to the
 	 * Java 9 module system and javax.inject being unlikely to be moduralized.
-	 * 
+	 *
 	 * @return
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -89,7 +89,7 @@ public class CrayonImpl
 
 			return v -> {
 				Annotation a = v.getAnnotation(c);
-				
+
 				// No annotation found so no name
 				if(a == null) return null;
 
@@ -106,7 +106,7 @@ public class CrayonImpl
 	/**
 	 * Invoke the given method and raise a custom exception if unable to
 	 * access it on the annotation.
-	 * 
+	 *
 	 * @param method
 	 *   the method to invoke
 	 * @param annotation
@@ -130,7 +130,7 @@ public class CrayonImpl
 
 	/**
 	 * Get a method from the given annotation.
-	 * 
+	 *
 	 * @param annotation
 	 *   annotation type to get method from
 	 * @param name
@@ -150,9 +150,9 @@ public class CrayonImpl
 	}
 
 	/**
-	 * Find the name if annotated with the Guice or javax.inject Named 
+	 * Find the name if annotated with the Guice or javax.inject Named
 	 * annotation.
-	 * 
+	 *
 	 * @param def
 	 *   the definition of the method
 	 */

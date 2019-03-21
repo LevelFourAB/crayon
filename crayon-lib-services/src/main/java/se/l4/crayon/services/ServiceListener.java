@@ -1,6 +1,6 @@
 /*
  * Copyright 2011 Level Four AB
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,7 +20,7 @@ import java.util.EventListener;
 /**
  * Service listener interface that can be used to monitor the status of a
  * service.
- * 
+ *
  * @author Andreas Holstenson
  *
  */
@@ -29,7 +29,7 @@ public interface ServiceListener
 {
 	/**
 	 * Status of a service has changed.
-	 * 
+	 *
 	 * @param info
 	 * 		information about service
 	 */

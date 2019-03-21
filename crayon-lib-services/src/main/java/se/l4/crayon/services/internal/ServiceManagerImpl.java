@@ -1,6 +1,6 @@
 /*
  * Copyright 2011 Level Four AB
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the License);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -37,8 +37,8 @@ import com.google.inject.Injector;
 import com.google.inject.Singleton;
 
 /**
- * Implementation of {@link ServiceManager}.  
- * 
+ * Implementation of {@link ServiceManager}.
+ *
  * @author Andreas Holstenson
  *
  */
@@ -48,27 +48,27 @@ public class ServiceManagerImpl
 {
 	private static final Logger logger =
 		LoggerFactory.getLogger(ServiceManager.class);
-	
+
 	private Set<ServiceListener> listeners;
-	
+
 	private Injector injector;
 	private List<ManagedService> services;
-	
+
 	private Map<ManagedService, ServiceInfoImpl> status;
-	
+
 	@Inject
 	public ServiceManagerImpl(Injector injector)
 	{
 		listeners = new CopyOnWriteArraySet<ServiceListener>();
-		
+
 		services = new CopyOnWriteArrayList<ManagedService>();
 		status = new ConcurrentHashMap<ManagedService, ServiceInfoImpl>();
-		
+
 		this.injector = injector;
-		
+
 		// Add a shutdown hook that will close all services
 		Runtime.getRuntime().addShutdownHook(
-			new Thread() 
+			new Thread()
 			{
 				@Override
 				public void run()
@@ -77,32 +77,32 @@ public class ServiceManagerImpl
 				}
 			}
 		);
-		
+
 		// Add the log listener
 		addListener(new LogListener());
 	}
-	
+
 	public void addService(ManagedService service)
 	{
 		services.add(service);
-		
+
 		ServiceInfoImpl info = getInfo(service);
 		info.status = ServiceStatus.STOPPED;
 	}
-	
+
 	public ManagedService addService(Class<? extends ManagedService> service)
 	{
 		ManagedService instance = injector.getInstance(service);
 		addService(instance);
-		
+
 		return instance;
 	}
-	
+
 	public void startService(ManagedService service)
 		throws Exception
 	{
 		ServiceInfoImpl info = getInfo(service);
-		
+
 		synchronized(info)
 		{
 			if(info.status == ServiceStatus.STARTING
@@ -112,13 +112,13 @@ public class ServiceManagerImpl
 				logger.info("{} has status {}, aborting", service, info.status);
 				return;
 			}
-		
+
 			try
 			{
 				info.setStatus(ServiceStatus.STARTING);
-				
+
 				service.start();
-				
+
 				if(info.getStatus() == ServiceStatus.STARTING)
 				{
 					info.setStatus(ServiceStatus.RUNNING);
@@ -127,7 +127,7 @@ public class ServiceManagerImpl
 			catch(Exception e)
 			{
 				info.setStatus(ServiceStatus.FAILED, e);
-				
+
 				throw e;
 			}
 		}
@@ -137,7 +137,7 @@ public class ServiceManagerImpl
 		throws Exception
 	{
 		ServiceInfoImpl info = getInfo(service);
-		
+
 		synchronized(info)
 		{
 			if(info.status == ServiceStatus.FAILED
@@ -148,11 +148,11 @@ public class ServiceManagerImpl
 				logger.info("{} has status {}, aborting", service, info.status);
 				return;
 			}
-			
+
 			try
 			{
 				info.setStatus(ServiceStatus.STOPPING);
-					
+
 				service.stop();
 
 				info.setStatus(ServiceStatus.STOPPED);
@@ -160,14 +160,14 @@ public class ServiceManagerImpl
 			catch(Exception e)
 			{
 				info.setStatus(ServiceStatus.FAILED, e);
-				
+
 				throw e;
 			}
 		}
 	}
 
 	public void startAll()
-	{		
+	{
 		for(ManagedService service : services)
 		{
 			try
@@ -186,7 +186,7 @@ public class ServiceManagerImpl
 		for(int i=services.size()-1; i>=0; i--)
 		{
 			ManagedService service = services.get(i);
-			
+
 			try
 			{
 				stopService(service);
@@ -197,7 +197,7 @@ public class ServiceManagerImpl
 			}
 		}
 	}
-	
+
 	public void reportFailure(ManagedService service)
 	{
 		ServiceInfoImpl info = getInfo(service);
@@ -224,10 +224,10 @@ public class ServiceManagerImpl
 			info = new ServiceInfoImpl(service, this);
 			status.put(service, info);
 		}
-		
+
 		return info;
 	}
-	
+
 	public void addListener(ServiceListener listener)
 	{
 		listeners.add(listener);
@@ -237,7 +237,7 @@ public class ServiceManagerImpl
 	{
 		listeners.remove(listener);
 	}
-	
+
 	/**
 	 * Inner implementation of {@link ServiceInfo}.
 	 *
@@ -247,23 +247,23 @@ public class ServiceManagerImpl
 		implements ServiceInfo
 	{
 		private Set<ServiceListener> listeners;
-		
+
 		private Exception exception;
 		private ManagedService service;
 		private ServiceStatus status;
 		private ServiceManagerImpl manager;
-		
+
 		public ServiceInfoImpl(ManagedService service, ServiceManagerImpl manager)
 		{
 			listeners = new CopyOnWriteArraySet<ServiceListener>();
-			
+
 			this.service = service;
 			this.status = ServiceStatus.STOPPED;
 			this.exception = null;
-			
+
 			this.manager = manager;
 		}
-		
+
 		public Exception getFailedWith()
 		{
 			return exception;
@@ -278,7 +278,7 @@ public class ServiceManagerImpl
 		{
 			return status;
 		}
-		
+
 		public void addListener(ServiceListener listener)
 		{
 			listeners.add(listener);
@@ -288,36 +288,36 @@ public class ServiceManagerImpl
 		{
 			listeners.remove(listener);
 		}
-		
+
 		public void setStatus(ServiceStatus status)
 		{
 			this.status = status;
 			this.exception = null;
-			
+
 			fireListeners();
 		}
-		
+
 		public void setStatus(ServiceStatus status, Exception e)
 		{
 			this.status = status;
 			this.exception = e;
-			
+
 			fireListeners();
 		}
-		
+
 		private void fireListeners()
 		{
 			for(ServiceListener l : manager.listeners)
 			{
 				l.serviceStatusChanged(this);
 			}
-			
+
 			for(ServiceListener l : listeners)
 			{
 				l.serviceStatusChanged(this);
 			}
 		}
-		
+
 		@Override
 		public String toString()
 		{
@@ -328,7 +328,7 @@ public class ServiceManagerImpl
 	/**
 	 * Internal listener that will log changes to any service registered
 	 * with the manager.
-	 * 
+	 *
 	 * @author Andreas Holstenson
 	 *
 	 */
