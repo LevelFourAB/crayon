@@ -8,7 +8,7 @@ The main library is `crayon-core` and is available in Maven-central:
 <dependency>
   <groupId>se.l4.crayon</groupId>
   <artifactId>crayon-core</artifactId>
-  <version>0.7</version>
+  <version>1.1.0</version>
 </dependency>
 ```
 
