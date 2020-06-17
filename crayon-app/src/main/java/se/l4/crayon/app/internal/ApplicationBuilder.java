@@ -31,6 +31,8 @@ import se.l4.crayon.app.ApplicationException;
 import se.l4.crayon.config.ConfigModule;
 import se.l4.crayon.module.CrayonModule;
 import se.l4.crayon.services.ServicesModule;
+import se.l4.crayon.vibe.VibeModule;
+import se.l4.crayon.vibe.VibeModule;
 
 public class ApplicationBuilder
 	implements Application.Builder
@@ -80,6 +82,9 @@ public class ApplicationBuilder
 
 		// Make sure services are available
 		modules.add(new ServicesModule());
+
+		// Health metrics via Vibe
+		modules.add(new VibeModule());
 
 		// Load modules registered via ServiceLoader
 		ServiceLoader.load(CrayonModule.class).forEach(modules::add);

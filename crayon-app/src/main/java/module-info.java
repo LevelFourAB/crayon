@@ -4,6 +4,7 @@ module se.l4.crayon.app {
 
 	requires se.l4.crayon.config;
 	requires se.l4.crayon.services;
+	requires se.l4.crayon.vibe;
 
 	requires ch.qos.logback.classic;
 	requires ch.qos.logback.core;
