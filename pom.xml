@@ -22,6 +22,7 @@
 		<slf4j-version>1.7.30</slf4j-version>
 		<guice-version>4.2.3</guice-version>
 		<commons-version>1.2.2</commons-version>
+		<vibe-version>0.4.0</vibe-version>
 	</properties>
 
 	<modules>
@@ -33,6 +34,7 @@
 
 		<module>crayon-services</module>
 		<module>crayon-types</module>
+		<module>crayon-vibe</module>
 	</modules>
 
 	<!-- License -->
