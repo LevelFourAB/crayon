@@ -3,9 +3,9 @@ package se.l4.crayon.app.internal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import se.l4.crayon.app.Application;
 import se.l4.crayon.services.ServiceInfo;
 import se.l4.crayon.services.ServiceListener;
+import se.l4.crayon.services.ServiceManager;
 
 /**
  * Listener that outputs information about service status as it changes.
@@ -13,7 +13,7 @@ import se.l4.crayon.services.ServiceListener;
 public class ApplicationServiceListener
 	implements ServiceListener
 {
-	private static final Logger logger = LoggerFactory.getLogger(Application.class);
+	private static final Logger logger = LoggerFactory.getLogger(ServiceManager.class);
 
 	@Override
 	public void serviceStatusChanged(ServiceInfo info)

@@ -30,13 +30,15 @@ import se.l4.crayon.app.Application.Builder;
 import se.l4.crayon.app.ApplicationException;
 import se.l4.crayon.config.ConfigModule;
 import se.l4.crayon.module.CrayonModule;
+import se.l4.crayon.services.ServiceInfo;
 import se.l4.crayon.services.ServicesModule;
-import se.l4.crayon.vibe.VibeModule;
 import se.l4.crayon.vibe.VibeModule;
 
 public class ApplicationBuilder
 	implements Application.Builder
 {
+	private static final Logger logger = LoggerFactory.getLogger(Application.class);
+
 	private final String identifier;
 	private final Set<Module> modules;
 
@@ -73,11 +75,26 @@ public class ApplicationBuilder
 	{
 		configureLogging();
 
+		logger.info("[1/5] Finding configuration files");
+
+		List<Path> configFiles = new ArrayList<>();
+		findDefaultConfigFile().ifPresent(configFiles::add);
+
+		if(configFiles.isEmpty())
+		{
+			logger.info("  No configuration files");
+		}
+		else
+		{
+			configFiles.forEach(f -> logger.info("  " + f));
+		}
+
+		logger.info("[2/5] Discovering modules");
+		modules.forEach(m -> logger.info("  Using module " + m.getClass().getName()));
+
 		Stage stage = PropertiesHelper.getDefaultStage();
 
 		// Resolve the configuration and make it available
-		List<Path> configFiles = new ArrayList<>();
-		findDefaultConfigFile().ifPresent(configFiles::add);
 		modules.add(new ConfigModule(configFiles));
 
 		// Make sure services are available
@@ -87,14 +104,34 @@ public class ApplicationBuilder
 		modules.add(new VibeModule());
 
 		// Load modules registered via ServiceLoader
-		ServiceLoader.load(CrayonModule.class).forEach(modules::add);
+		ServiceLoader.load(CrayonModule.class).forEach(m -> {
+			modules.add(m);
+			logger.info("  Using auto-discovered module " + m.getClass().getName());
+		});
+
+		logger.info("[3/5] Initializing modules and creating injector");
 
 		// Create the injector
 		Injector injector = Guice.createInjector(stage, modules);
 
 		// Create the application and start the services
 		ApplicationImpl result = new ApplicationImpl(injector);
-		result.startServices();
+		logger.info("[4/5] Starting services");
+		boolean hasServices = result.startInitialServices();
+
+		logger.info("[5/5] Startup done");
+		if(hasServices)
+		{
+			for(ServiceInfo info : result.services)
+			{
+				logger.info("  " + ApplicationServiceListener.toString(info));
+			}
+		}
+		else
+		{
+			logger.info("  No services");
+		}
+
 		return result;
 	}
 

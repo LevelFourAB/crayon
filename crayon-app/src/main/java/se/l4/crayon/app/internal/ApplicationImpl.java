@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import se.l4.crayon.app.Application;
-import se.l4.crayon.services.ServiceInfo;
 import se.l4.crayon.services.ServiceManager;
 
 public class ApplicationImpl
@@ -15,7 +14,7 @@ public class ApplicationImpl
 	private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
 	private final Injector injector;
-	private final ServiceManager services;
+	final ServiceManager services;
 
 	public ApplicationImpl(Injector injector)
 	{
@@ -30,12 +29,26 @@ public class ApplicationImpl
 		return injector;
 	}
 
+	boolean startInitialServices()
+	{
+		if(services.iterator().hasNext())
+		{
+			// TODO: This way of figuring out if there are services is hacky at best
+
+			services.startAll();
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 	@Override
 	public void startServices()
 	{
 		logger.info("Starting all services");
 		services.startAll();
-		outputServiceStatus();
 	}
 
 	@Override
@@ -43,15 +56,5 @@ public class ApplicationImpl
 	{
 		logger.info("Stopping all services");
 		services.stopAll();
-		outputServiceStatus();
-	}
-
-	private void outputServiceStatus()
-	{
-		logger.info("Service status:");
-		for(ServiceInfo info : services)
-		{
-			logger.info(ApplicationServiceListener.toString(info));
-		}
 	}
 }
