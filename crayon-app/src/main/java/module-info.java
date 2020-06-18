@@ -12,9 +12,6 @@ module se.l4.crayon.app {
 	requires java.logging;
 	requires java.xml;
 
-	requires java.validation;
-	requires org.hibernate.validator;
-
 	exports se.l4.crayon.app;
 
 	uses se.l4.crayon.module.CrayonModule;

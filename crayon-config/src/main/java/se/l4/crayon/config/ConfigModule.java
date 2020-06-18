@@ -2,7 +2,7 @@ package se.l4.crayon.config;
 
 import java.nio.file.Path;
 
-import javax.validation.Validation;
+import javax.validation.ValidatorFactory;
 
 import com.google.inject.Binder;
 import com.google.inject.Module;
@@ -13,6 +13,7 @@ import se.l4.commons.config.Config;
 import se.l4.commons.config.ConfigBuilder;
 import se.l4.crayon.contributions.Contributions;
 import se.l4.crayon.contributions.ContributionsBinder;
+import se.l4.crayon.validation.ValidationModule;
 
 public class ConfigModule
 	implements Module
@@ -32,6 +33,8 @@ public class ConfigModule
 	@Override
 	public void configure(Binder binder)
 	{
+		binder.install(new ValidationModule());
+
 		ContributionsBinder.newBinder(binder)
 			.bindContributions(ConfigContribution.class);
 	}
@@ -39,11 +42,12 @@ public class ConfigModule
 	@Provides
 	@Singleton
 	public Config provideConfig(
-		@ConfigContribution Contributions contributions
+		@ConfigContribution Contributions contributions,
+		ValidatorFactory validatorFactory
 	)
 	{
 		ConfigBuilder builder = Config.builder()
-			.withValidatorFactory(Validation.buildDefaultValidatorFactory());
+			.withValidatorFactory(validatorFactory);
 
 		contributions.run(binder -> binder.bind(ConfigBuilder.class).toInstance(builder));
 

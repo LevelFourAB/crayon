@@ -8,7 +8,7 @@
 		<version>2.0.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>crayon-config</artifactId>
+	<artifactId>crayon-validation</artifactId>
 	<name>${project.artifactId}</name>
 
 	<dependencies>
@@ -19,15 +19,21 @@
 		</dependency>
 
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>crayon-validation</artifactId>
-			<version>${project.version}</version>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+			<version>2.0.1.Final</version>
 		</dependency>
 
 		<dependency>
-			<groupId>se.l4.commons</groupId>
-			<artifactId>commons-config</artifactId>
-			<version>${commons-version}</version>
+			<groupId>org.hibernate.validator</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>6.1.5.Final</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.glassfish</groupId>
+			<artifactId>javax.el</artifactId>
+			<version>3.0.0</version>
 		</dependency>
 	</dependencies>
 </project>

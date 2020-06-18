@@ -13,8 +13,7 @@
 	<url>https://github.com/LevelFourAB/crayon</url>
 
 	<description>
-		Crayon is an extension to Google Guice that provides the ability to
-		define contribution methods.
+		Crayon is an application bootstrap built upon Google Guice.
 	</description>
 
 	<properties>
@@ -26,14 +25,14 @@
 	</properties>
 
 	<modules>
+		<module>crayon-app</module>
+		<module>crayon-module</module>
+
 		<module>crayon-config</module>
 		<module>crayon-contributions</module>
-
-		<module>crayon-module</module>
-		<module>crayon-app</module>
-
 		<module>crayon-services</module>
 		<module>crayon-types</module>
+		<module>crayon-validation</module>
 		<module>crayon-vibe</module>
 	</modules>
 
