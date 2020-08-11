@@ -5,7 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.inject.Singleton;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import se.l4.crayon.module.CrayonModule;
 import se.l4.crayon.services.ManagedService;

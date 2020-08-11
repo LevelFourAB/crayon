@@ -9,7 +9,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import se.l4.crayon.contributions.ContributionsBinder;
 import se.l4.exoconf.Config;

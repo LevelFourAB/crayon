@@ -18,7 +18,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Basic test for running startup and shutdown methods.
