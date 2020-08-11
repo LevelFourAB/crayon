@@ -21,7 +21,7 @@ public class ApplicationTest
 	@Test
 	public void test()
 	{
-		Application app = Application.withIdentifier("test")
+		Application app = Application.create("test")
 			.add(new TestModule())
 			.start();
 

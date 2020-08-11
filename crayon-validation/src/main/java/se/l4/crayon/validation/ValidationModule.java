@@ -47,4 +47,16 @@ public class ValidationModule
 	{
 		return factory.getValidator();
 	}
+
+	@Override
+	public int hashCode()
+	{
+		return getClass().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		return obj instanceof ValidationModule;
+	}
 }

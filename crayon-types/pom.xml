@@ -19,15 +19,15 @@
 		</dependency>
 
 		<dependency>
-			<groupId>se.l4.commons</groupId>
-			<artifactId>commons-guice</artifactId>
-			<version>${commons-version}</version>
+			<groupId>se.l4.ylem.types</groupId>
+			<artifactId>ylem-types-discovery</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>
-			<groupId>se.l4.commons</groupId>
-			<artifactId>commons-types</artifactId>
-			<version>${commons-version}</version>
+			<groupId>se.l4.ylem.types</groupId>
+			<artifactId>ylem-types-instances-guice</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 	</dependencies>
 </project>

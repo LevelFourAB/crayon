@@ -6,11 +6,11 @@ import java.util.Set;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 
-import se.l4.commons.guice.InstanceFactoryModule;
-import se.l4.commons.types.InstanceFactory;
-import se.l4.commons.types.TypeFinder;
 import se.l4.crayon.contributions.Contributions;
 import se.l4.crayon.module.CrayonModule;
+import se.l4.ylem.types.discovery.TypeDiscovery;
+import se.l4.ylem.types.instances.InstanceFactory;
+import se.l4.ylem.types.instances.guice.InstanceFactoryModule;
 
 /**
  * Module for activating supports for type related things, such as {@link TypeFinder}
@@ -29,7 +29,7 @@ public class TypesModule
 
 	@Singleton
 	@Provides
-	public TypeFinder provideTypeFinder(
+	public TypeDiscovery provideTypeDiscovery(
 		@TypeContribution Contributions contributions,
 		InstanceFactory instanceFactory
 	)
@@ -37,7 +37,7 @@ public class TypesModule
 		CollectorImpl impl = new CollectorImpl();
 		contributions.run(binder -> binder.bind(TypeCollector.class).toInstance(impl));
 
-		return TypeFinder.builder()
+		return TypeDiscovery.create()
 			.setInstanceFactory(instanceFactory)
 			.addPackages(impl.packages)
 			.build();
@@ -46,7 +46,7 @@ public class TypesModule
 	private static class CollectorImpl
 		implements TypeCollector
 	{
-		private Set<String> packages;
+		private final Set<String> packages;
 
 		public CollectorImpl()
 		{

@@ -2,6 +2,7 @@ package se.l4.crayon.config;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.Optional;
 
 import com.google.inject.Binder;
 import com.google.inject.Key;
@@ -9,8 +10,7 @@ import com.google.inject.Provider;
 import com.google.inject.Scopes;
 import com.google.inject.util.Types;
 
-import se.l4.commons.config.Config;
-import se.l4.commons.config.Value;
+import se.l4.exoconf.Config;
 
 /**
  * Binder to help with binding configuration values.
@@ -66,6 +66,7 @@ public class ConfigBinder
 	 */
 	public static ConfigBinder newBinder(Binder binder)
 	{
+		binder.install(new ConfigModule());
 		return new ConfigBinder(binder);
 	}
 
@@ -153,8 +154,8 @@ public class ConfigBinder
 		public void bind(Binder binder)
 		{
 
-			Type valueType = Types.newParameterizedType(Value.class, type);
-			Key<Value<T>> valueKey;
+			Type valueType = Types.newParameterizedType(Optional.class, type);
+			Key<Optional<T>> valueKey;
 			Key<T> key;
 
 			if(annotationClass != null)
@@ -173,7 +174,7 @@ public class ConfigBinder
 				key = Key.get(type);
 			}
 
-			Provider<Value<T>> provider = createProvider(binder);
+			Provider<Optional<T>> provider = createProvider(binder);
 
 			binder.bind(valueKey)
 				.toProvider(provider)
@@ -183,7 +184,7 @@ public class ConfigBinder
 				.toProvider(new ConfigObjectProvider<T>(provider, defaultValue));
 		}
 
-		private Provider<Value<T>> createProvider(Binder binder)
+		private Provider<Optional<T>> createProvider(Binder binder)
 		{
 			Provider<Config> config = binder.getProvider(Config.class);
 			return new ConfigValueProvider<T>(config, key, type);
@@ -193,10 +194,10 @@ public class ConfigBinder
 	private static class ConfigObjectProvider<T>
 		implements Provider<T>
 	{
-		private final Provider<Value<T>> provider;
+		private final Provider<Optional<T>> provider;
 		private final T defaultValue;
 
-		public ConfigObjectProvider(Provider<Value<T>> provider, T defaultValue)
+		public ConfigObjectProvider(Provider<Optional<T>> provider, T defaultValue)
 		{
 			this.provider = provider;
 			this.defaultValue = defaultValue;
@@ -205,12 +206,12 @@ public class ConfigBinder
 		@Override
 		public T get()
 		{
-			return provider.get().getOrDefault(defaultValue);
+			return provider.get().orElse(defaultValue);
 		}
 	}
 
 	private static class ConfigValueProvider<T>
-		implements Provider<Value<T>>
+		implements Provider<Optional<T>>
 	{
 		private final Provider<Config> config;
 		private final String key;
@@ -224,7 +225,7 @@ public class ConfigBinder
 		}
 
 		@Override
-		public Value<T> get()
+		public Optional<T> get()
 		{
 			return config.get().get(key, type);
 		}

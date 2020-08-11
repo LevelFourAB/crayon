@@ -20,7 +20,6 @@ import com.google.inject.spi.ProvisionListener;
 import com.google.inject.spi.TypeConverter;
 import com.google.inject.spi.TypeListener;
 
-import se.l4.commons.config.Config;
 import se.l4.crayon.config.ConfigBinder;
 import se.l4.crayon.contributions.Contributions;
 import se.l4.crayon.contributions.ContributionsBinder;
@@ -133,7 +132,6 @@ public abstract class CrayonModule
 	{
 		if(configBinder == null)
 		{
-			requireBinding(Config.class);
 			configBinder = ConfigBinder.newBinder(binder());
 		}
 

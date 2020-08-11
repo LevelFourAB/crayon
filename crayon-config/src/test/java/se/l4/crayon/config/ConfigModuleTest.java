@@ -4,8 +4,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import java.util.Collections;
-
 import com.google.inject.Binder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -13,18 +11,15 @@ import com.google.inject.Module;
 
 import org.junit.Test;
 
-import se.l4.commons.config.Config;
-import se.l4.commons.config.ConfigBuilder;
 import se.l4.crayon.contributions.ContributionsBinder;
+import se.l4.exoconf.Config;
 
 public class ConfigModuleTest
 {
 	@Test
 	public void testNoPaths()
 	{
-		Injector injector = Guice.createInjector(new ConfigModule(
-			Collections.emptyList()
-		));
+		Injector injector = Guice.createInjector(new ConfigModule());
 
 		Config config = injector.getInstance(Config.class);
 		assertThat(config, notNullValue());
@@ -34,14 +29,14 @@ public class ConfigModuleTest
 	public void testContribution()
 	{
 		Injector injector = Guice.createInjector(
-			new ConfigModule(Collections.emptyList()),
+			new ConfigModule(),
 			new ContributionTestModule()
 		);
 
 		Config config = injector.getInstance(Config.class);
 		assertThat(config, notNullValue());
 
-		assertThat(config.asObject("test", boolean.class), is(true));
+		assertThat(config.get("test", boolean.class).get(), is(true));
 	}
 
 	public static class ContributionTestModule
@@ -54,9 +49,9 @@ public class ConfigModuleTest
 		}
 
 		@ConfigContribution
-		public void contributeConfig(ConfigBuilder builder)
+		public void contributeConfig(ConfigCollector collector)
 		{
-			builder.with("test", true);
+			collector.addProperty("test", true);
 		}
 	}
 }

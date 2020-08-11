@@ -8,15 +8,15 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import com.google.common.collect.Iterators;
 
-import se.l4.commons.types.matching.ClassMatchingConcurrentHashMap;
-import se.l4.commons.types.matching.ClassMatchingMap;
-import se.l4.commons.types.matching.MatchedType;
 import se.l4.crayon.services.ManagedService;
 import se.l4.crayon.services.ServiceEncounter;
 import se.l4.crayon.services.ServiceInfo;
 import se.l4.crayon.services.ServiceListener;
 import se.l4.crayon.services.ServiceManager;
 import se.l4.crayon.services.ServiceStatus;
+import se.l4.ylem.types.matching.ClassMatchingConcurrentHashMap;
+import se.l4.ylem.types.matching.MatchedType;
+import se.l4.ylem.types.matching.MutableClassMatchingMap;
 
 /**
  * Implementation of {@link ServiceManager}.
@@ -25,7 +25,7 @@ public class ServiceManagerImpl
 	implements ServiceManager
 {
 	private final Set<ServiceListener> listeners;
-	private final ClassMatchingMap<ManagedService, ServiceInfoImpl> services;
+	private final MutableClassMatchingMap<ManagedService, ServiceInfoImpl> services;
 
 	private volatile boolean needsNewDependencies;
 

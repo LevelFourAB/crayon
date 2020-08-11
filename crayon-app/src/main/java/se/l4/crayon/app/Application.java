@@ -30,7 +30,7 @@ public interface Application
 	 * @param id
 	 * @return
 	 */
-	static Builder withIdentifier(String id)
+	static Builder create(String id)
 	{
 		return new ApplicationBuilder(id);
 	}

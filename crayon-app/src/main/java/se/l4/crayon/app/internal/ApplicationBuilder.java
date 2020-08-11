@@ -13,6 +13,7 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.logging.LogManager;
 
+import com.google.inject.Binder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
@@ -28,6 +29,8 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import se.l4.crayon.app.Application;
 import se.l4.crayon.app.Application.Builder;
 import se.l4.crayon.app.ApplicationException;
+import se.l4.crayon.config.ConfigCollector;
+import se.l4.crayon.config.ConfigContribution;
 import se.l4.crayon.config.ConfigModule;
 import se.l4.crayon.module.CrayonModule;
 import se.l4.crayon.services.ServiceInfo;
@@ -95,7 +98,7 @@ public class ApplicationBuilder
 		Stage stage = PropertiesHelper.getDefaultStage();
 
 		// Resolve the configuration and make it available
-		modules.add(new ConfigModule(configFiles));
+		modules.add(new ConfigFilesModule(configFiles));
 
 		// Make sure services are available
 		modules.add(new ServicesModule());
@@ -212,5 +215,33 @@ public class ApplicationBuilder
 			.map(Paths::get)
 			.filter(Files::exists)
 			.findFirst();
+	}
+
+	private static class ConfigFilesModule
+		implements Module
+	{
+		private final List<Path> files;
+
+		public ConfigFilesModule(List<Path> files)
+		{
+			this.files = files;
+		}
+
+		@Override
+		public void configure(Binder binder)
+		{
+			binder.install(new ConfigModule());
+		}
+
+		@ConfigContribution
+		public void contributeConfigFiles(
+			ConfigCollector collector
+		)
+		{
+			for(Path path : files)
+			{
+				collector.addFile(path);
+			}
+		}
 	}
 }
