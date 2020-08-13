@@ -1,7 +1,9 @@
 package se.l4.crayon.services;
 
-import java.util.Collections;
-import java.util.Set;
+import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.set.ImmutableSet;
+
+import reactor.core.publisher.Mono;
 
 /**
  * Managed service that can be started or stopped via {@link ServiceManager}.
@@ -11,22 +13,15 @@ public interface ManagedService
 	/**
 	 * Start service.
 	 */
-	void start(ServiceEncounter encounter)
-		throws Exception;
-
-	/**
-	 * Stop service.
-	 */
-	void stop()
-		throws Exception;
+	Mono<RunningService> start();
 
 	/**
 	 * Get other services this service depends on.
 	 *
 	 * @return
 	 */
-	default Set<Class<? extends ManagedService>> getDependencies()
+	default ImmutableSet<Class<? extends ManagedService>> getDependencies()
 	{
-		return Collections.emptySet();
+		return Sets.immutable.empty();
 	}
 }

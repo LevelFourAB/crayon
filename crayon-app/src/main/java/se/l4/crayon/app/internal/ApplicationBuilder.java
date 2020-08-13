@@ -33,7 +33,7 @@ import se.l4.crayon.config.ConfigCollector;
 import se.l4.crayon.config.ConfigContribution;
 import se.l4.crayon.config.ConfigModule;
 import se.l4.crayon.module.CrayonModule;
-import se.l4.crayon.services.ServiceInfo;
+import se.l4.crayon.services.ServiceStatus;
 import se.l4.crayon.services.ServicesModule;
 import se.l4.crayon.vibe.VibeModule;
 
@@ -120,19 +120,22 @@ public class ApplicationBuilder
 		// Create the application and start the services
 		ApplicationImpl result = new ApplicationImpl(injector);
 		logger.info("[4/5] Starting services");
-		boolean hasServices = result.startInitialServices();
+
+		List<ServiceStatus> services = result.services.startAll()
+			.collectSortedList((a, b) -> a.getService().toString().compareTo(b.getService().toString()))
+			.block();
 
 		logger.info("[5/5] Startup done");
-		if(hasServices)
+		if(services.isEmpty())
 		{
-			for(ServiceInfo info : result.services)
-			{
-				logger.info("  " + ApplicationServiceListener.toString(info));
-			}
+			logger.info("  No services");
 		}
 		else
 		{
-			logger.info("  No services");
+			for(ServiceStatus info : services)
+			{
+				logger.info(String.format("  [ %-8s ] %s", info.getState(), info.getService()));
+			}
 		}
 
 		return result;

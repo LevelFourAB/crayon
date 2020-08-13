@@ -1,17 +1,15 @@
 package se.l4.crayon.services.internal;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 
-import com.google.common.collect.Iterators;
-
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxSink;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.ReplayProcessor;
 import se.l4.crayon.services.ManagedService;
-import se.l4.crayon.services.ServiceEncounter;
-import se.l4.crayon.services.ServiceInfo;
-import se.l4.crayon.services.ServiceListener;
+import se.l4.crayon.services.RunningService;
 import se.l4.crayon.services.ServiceManager;
 import se.l4.crayon.services.ServiceStatus;
 import se.l4.ylem.types.matching.ClassMatchingConcurrentHashMap;
@@ -24,16 +22,18 @@ import se.l4.ylem.types.matching.MutableClassMatchingMap;
 public class ServiceManagerImpl
 	implements ServiceManager
 {
-	private final Set<ServiceListener> listeners;
-	private final MutableClassMatchingMap<ManagedService, ServiceInfoImpl> services;
-
+	private final MutableClassMatchingMap<ManagedService, Service> services;
 	private volatile boolean needsNewDependencies;
+
+	private final ReplayProcessor<ServiceStatus> events;
+	private final FluxSink<ServiceStatus> eventsSink;
 
 	public ServiceManagerImpl()
 	{
-		listeners = new CopyOnWriteArraySet<ServiceListener>();
-
 		services = new ClassMatchingConcurrentHashMap<>();
+
+		events = ReplayProcessor.create(0);
+		eventsSink = events.sink();
 	}
 
 	@Override
@@ -41,77 +41,65 @@ public class ServiceManagerImpl
 	{
 		synchronized(this)
 		{
-			services.put(service.getClass(), new ServiceInfoImpl(service, this));
+			services.put(service.getClass(), new Service(service, this));
 			needsNewDependencies = true;
 		}
 	}
 
 	@Override
-	public void start(Class<? extends ManagedService> service)
-		throws Exception
+	public Mono<ServiceStatus> start(Class<? extends ManagedService> service)
 	{
-		Optional<ServiceInfoImpl> info = services.getBest(service);
-		if(! info.isPresent()) return;
+		return Mono.defer(() -> {
+			Optional<Service> info = services.getBest(service);
+			if(! info.isPresent()) return Mono.empty();
 
-		info.get().start();
+			return info.get().start();
+		});
 	}
 
 	@Override
-	public void stop(Class<? extends ManagedService> service)
-		throws Exception
+	public Mono<ServiceStatus> stop(Class<? extends ManagedService> service)
 	{
-		Optional<ServiceInfoImpl> info = services.getBest(service);
-		if(! info.isPresent()) return;
+		return Mono.defer(() -> {
+			Optional<Service> info = services.getBest(service);
+			if(! info.isPresent()) return Mono.empty();
 
-		info.get().stop();
+			return info.get().stop();
+		});
 	}
 
 	@Override
-	public void startAll()
+	public Flux<ServiceStatus> startAll()
 	{
-		for(MatchedType<?, ServiceInfoImpl> mt : services.entries())
-		{
-			ServiceInfoImpl info = mt.getData();
-			info.start();
-		}
+		return Flux.fromIterable(services.entries())
+			.flatMap(mt -> mt.getData().start());
 	}
 
 	@Override
-	public void stopAll()
+	public Flux<ServiceStatus> stopAll()
 	{
-		for(MatchedType<?, ServiceInfoImpl> mt : services.entries())
-		{
-			ServiceInfoImpl info = mt.getData();
-			info.stop();
-		}
+		return Flux.fromIterable(services.entries())
+			.flatMap(mt -> mt.getData().stop());
 	}
 
 	@Override
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Optional<ServiceInfo> get(Class<? extends ManagedService> service)
+	public Mono<ServiceStatus> get(Class<? extends ManagedService> service)
 	{
-		return (Optional) services.getBest(service);
+		return Mono.fromSupplier(() -> services.getBest(service).orElse(null))
+			.map(s -> s.currentStatus);
 	}
 
 	@Override
-	public Iterator<ServiceInfo> iterator()
+	public Flux<ServiceStatus> serviceStatus()
 	{
-		return Iterators.transform(
-			services.entries().iterator(),
-			s -> s.getData()
-		);
+		return events;
 	}
 
 	@Override
-	public void addListener(ServiceListener listener)
+	public Flux<ServiceStatus> services()
 	{
-		listeners.add(listener);
-	}
-
-	@Override
-	public void removeListener(ServiceListener listener)
-	{
-		listeners.remove(listener);
+		return Flux.fromIterable(services.entries())
+			.map(service -> service.getData().currentStatus);
 	}
 
 	private void maybeRecalculateDependencies()
@@ -121,21 +109,21 @@ public class ServiceManagerImpl
 			if(! needsNewDependencies) return;
 
 			// Clear dependencies
-			for(MatchedType<?, ServiceInfoImpl> mt : services.entries())
+			for(MatchedType<?, Service> mt : services.entries())
 			{
-				ServiceInfoImpl info = mt.getData();
+				Service info = mt.getData();
 				info.incomingDependencies.clear();
 				info.outgoingDependencies.clear();
 			}
 
 			// Copy dependencies
-			for(MatchedType<?, ServiceInfoImpl> mt : services.entries())
+			for(MatchedType<?, Service> mt : services.entries())
 			{
-				ServiceInfoImpl info = mt.getData();
+				Service info = mt.getData();
 
 				for(Class<? extends ManagedService> c : info.service.getDependencies())
 				{
-					Optional<ServiceInfoImpl> service = services.getBest(c);
+					Optional<Service> service = services.getBest(c);
 					if(! service.isPresent())
 					{
 						// TODO: What do we do if the service doesn't exist?
@@ -152,195 +140,180 @@ public class ServiceManagerImpl
 	}
 
 	/**
-	 * Inner implementation of {@link ServiceInfo}.
+	 * Inner implementation of {@link ServiceStatus}.
 	 */
-	private static class ServiceInfoImpl
-		implements ServiceInfo, ServiceEncounter
+	private static class Service
 	{
-		private Set<ServiceListener> listeners;
+		private final ManagedService service;
+		private final ServiceManagerImpl manager;
 
-		private Throwable exception;
-		private ManagedService service;
-		private ServiceStatus status;
-		private ServiceManagerImpl manager;
+		private ServiceStatus currentStatus;
+		private Mono<ServiceStatus> currentChange;
+		private RunningService runningService;
 
-		private final Set<ServiceInfo> incomingDependencies;
-		private final Set<ServiceInfo> outgoingDependencies;
+		private final Set<Service> incomingDependencies;
+		private final Set<Service> outgoingDependencies;
 
-		public ServiceInfoImpl(ManagedService service, ServiceManagerImpl manager)
+		public Service(ManagedService service, ServiceManagerImpl manager)
 		{
-			listeners = new CopyOnWriteArraySet<ServiceListener>();
-
 			this.service = service;
-			this.status = ServiceStatus.STOPPED;
-			this.exception = null;
 
 			this.manager = manager;
+
+			currentStatus = new ServiceStatusImpl(this, ServiceStatus.State.STOPPED, null);
+
 			this.outgoingDependencies = new HashSet<>();
 			this.incomingDependencies = new HashSet<>();
+		}
+
+		private ServiceStatus switchState(ServiceStatus.State state, Throwable failedWith)
+		{
+			currentStatus = new ServiceStatusImpl(this, state, failedWith);
+			manager.eventsSink.next(currentStatus);
+			return currentStatus;
+		}
+
+		public Mono<ServiceStatus> start()
+		{
+			return Mono.defer(() -> {
+				ServiceStatus.State state = currentStatus.getState();
+				if(state == ServiceStatus.State.RUNNING)
+				{
+					return Mono.just(currentStatus);
+				}
+
+				if(state == ServiceStatus.State.STOPPING)
+				{
+					return Mono.error(new RuntimeException("Unable to start service while it is being stopped"));
+				}
+
+				if(state == ServiceStatus.State.STARTING)
+				{
+					return currentChange;
+				}
+
+				manager.maybeRecalculateDependencies();
+
+				switchState(ServiceStatus.State.STARTING, null);
+
+				return currentChange = Flux.fromIterable(outgoingDependencies)
+					.flatMap(d -> d.start())
+					.reduce(ServiceStatus.State.RUNNING, (a, b) -> b.getState() == ServiceStatus.State.RUNNING ? a : ServiceStatus.State.FAILED)
+					.flatMap(status -> {
+						if(status == ServiceStatus.State.RUNNING)
+						{
+							// All dependencies could start, so let's start ourself
+							return service.start()
+								.map(rs -> {
+									this.runningService = rs;
+
+									return switchState(ServiceStatus.State.RUNNING, null);
+								});
+						}
+						else
+						{
+							// One or more dependencies failed
+							return Mono.just(switchState(
+								ServiceStatus.State.FAILED,
+								new RuntimeException("Could not start due to not all dependencies starting")
+							));
+						}
+					})
+					.onErrorResume(t -> {
+						return Mono.just(switchState(ServiceStatus.State.FAILED, t));
+					})
+					.cache();
+			});
+		}
+
+		public Mono<ServiceStatus> stop()
+		{
+			return Mono.defer(() -> {
+				ServiceStatus.State state = currentStatus.getState();
+				if(state == ServiceStatus.State.STOPPED)
+				{
+					return Mono.just(currentStatus);
+				}
+
+				if(state == ServiceStatus.State.FAILED)
+				{
+					return Mono.just(switchState(ServiceStatus.State.STOPPED, null));
+				}
+
+				if(state == ServiceStatus.State.STARTING)
+				{
+					return Mono.error(new RuntimeException("Service is currently being started, can't stop"));
+				}
+
+				if(state == ServiceStatus.State.STOPPING)
+				{
+					return currentChange;
+				}
+
+				manager.maybeRecalculateDependencies();
+
+				switchState(ServiceStatus.State.STOPPING, null);
+
+				return currentChange = Flux.fromIterable(incomingDependencies)
+					.flatMap(d -> d.stop())
+					.reduce(ServiceStatus.State.STOPPED, (a, b) -> b.getState() == ServiceStatus.State.STOPPED ? a : ServiceStatus.State.RUNNING)
+					.flatMap(status -> {
+						if(status == ServiceStatus.State.STOPPED)
+						{
+							// Everything depending on this service has stopped
+							return runningService.stop()
+								.map(v -> {
+									return switchState(ServiceStatus.State.STOPPED, null);
+								});
+						}
+						else
+						{
+							// One or more things depending on us didn't stop - keep running
+							return Mono.just(currentStatus);
+						}
+					})
+					.onErrorResume(t -> {
+						return Mono.just(switchState(ServiceStatus.State.FAILED, t));
+					})
+					.cache();
+			});
+		}
+	}
+
+	private static class ServiceStatusImpl
+		implements ServiceStatus
+	{
+		private final Service service;
+		private final ServiceStatus.State state;
+		private final Throwable failedWith;
+
+		public ServiceStatusImpl(
+			Service service,
+			ServiceStatus.State state,
+			Throwable failedWith
+		)
+		{
+			this.service = service;
+			this.state = state;
+			this.failedWith = failedWith;
+		}
+
+		@Override
+		public ManagedService getService()
+		{
+			return service.service;
+		}
+
+		@Override
+		public ServiceStatus.State getState()
+		{
+			return state;
 		}
 
 		@Override
 		public Optional<Throwable> getFailedWith()
 		{
-			return Optional.ofNullable(exception);
-		}
-
-		public ManagedService getService()
-		{
-			return service;
-		}
-
-		public ServiceStatus getStatus()
-		{
-			return status;
-		}
-
-		public void addListener(ServiceListener listener)
-		{
-			listeners.add(listener);
-		}
-
-		public void removeListener(ServiceListener listener)
-		{
-			listeners.remove(listener);
-		}
-
-		public void setStatus(ServiceStatus status)
-		{
-			this.status = status;
-			this.exception = null;
-
-			fireListeners();
-		}
-
-		public void setStatus(ServiceStatus status, Throwable e)
-		{
-			this.status = status;
-			this.exception = e;
-
-			fireListeners();
-		}
-
-		private void fireListeners()
-		{
-			for(ServiceListener l : manager.listeners)
-			{
-				l.serviceStatusChanged(this);
-			}
-
-			for(ServiceListener l : listeners)
-			{
-				l.serviceStatusChanged(this);
-			}
-		}
-
-		@Override
-		public synchronized void start()
-		{
-			if(status == ServiceStatus.STARTING
-				|| status == ServiceStatus.RUNNING
-				|| status == ServiceStatus.STOPPING)
-			{
-				return;
-			}
-
-			manager.maybeRecalculateDependencies();
-
-			try
-			{
-				setStatus(ServiceStatus.STARTING);
-
-				// Make sure that the services we depend on are started
-				for(ServiceInfo dependency : outgoingDependencies)
-				{
-					dependency.start();
-
-					if(dependency.getStatus() != ServiceStatus.RUNNING)
-					{
-						setStatus(ServiceStatus.FAILED);
-						return;
-					}
-				}
-
-				// Start our own service
-				service.start(this);
-
-				if(getStatus() == ServiceStatus.STARTING)
-				{
-					// Update the status if the job didn't update status on its own
-					setStatus(ServiceStatus.RUNNING);
-				}
-			}
-			catch(Throwable e)
-			{
-				setStatus(ServiceStatus.FAILED, e);
-			}
-		}
-
-		@Override
-		public void stop()
-		{
-			if(status == ServiceStatus.FAILED
-				|| status == ServiceStatus.STARTING
-				|| status == ServiceStatus.STOPPING
-				|| status == ServiceStatus.STOPPED)
-			{
-				return;
-			}
-
-			manager.maybeRecalculateDependencies();
-
-			try
-			{
-				setStatus(ServiceStatus.STOPPING);
-
-				// Make sure that the services that depend on us are stopped
-				for(ServiceInfo dependency : incomingDependencies)
-				{
-					dependency.stop();
-
-					if(dependency.getStatus() != ServiceStatus.STOPPED
-						&& dependency.getStatus() != ServiceStatus.FAILED)
-					{
-						setStatus(ServiceStatus.FAILED);
-						return;
-					}
-				}
-
-				service.stop();
-
-				setStatus(ServiceStatus.STOPPED);
-			}
-			catch(Exception e)
-			{
-				setStatus(ServiceStatus.FAILED, e);
-			}
-		}
-
-		@Override
-		public void reportStopped()
-		{
-			setStatus(ServiceStatus.STOPPED);
-		}
-
-		@Override
-		public void reportFailure(ManagedService service)
-		{
-			setStatus(ServiceStatus.FAILED);
-		}
-
-		@Override
-		public void reportFailure(ManagedService service, Exception e)
-		{
-			this.exception = e;
-			setStatus(ServiceStatus.FAILED);
-		}
-
-		@Override
-		public String toString()
-		{
-			return String.format("[ %-8s ] %s", getStatus(), getService());
+			return Optional.of(failedWith);
 		}
 	}
 }

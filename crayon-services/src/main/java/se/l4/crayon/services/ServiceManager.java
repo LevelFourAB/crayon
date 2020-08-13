@@ -1,6 +1,7 @@
 package se.l4.crayon.services;
 
-import java.util.Optional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * Manager of services, used for starting and stopping system services.
@@ -18,7 +19,6 @@ import java.util.Optional;
  *
  */
 public interface ServiceManager
-	extends Iterable<ServiceInfo>
 {
 	/**
 	 * Add a service that should be managed.
@@ -32,29 +32,37 @@ public interface ServiceManager
 	 * and refuse to start if it has.
 	 *
 	 * @param service
-	 * @throws Exception
+	 *   the service to start
+	 * @return
+	 *   mono that publishes the final state of the service
 	 */
-	void start(Class<? extends ManagedService> service)
-		throws Exception;
+	Mono<ServiceStatus> start(Class<? extends ManagedService> service);
 
 	/**
 	 * Stop the given service. Stops the service if it is running.
 	 *
 	 * @param service
-	 * @throws Exception
+	 *   the service to stop
+	 * @return
+	 *   mono that publishes the final state of the service
 	 */
-	void stop(Class<? extends ManagedService> service)
-		throws Exception;
+	Mono<ServiceStatus> stop(Class<? extends ManagedService> service);
 
 	/**
 	 * Start all services.
+	 *
+	 * @return
+	 *   flux that will publish the final state of all services
 	 */
-	void startAll();
+	Flux<ServiceStatus> startAll();
 
 	/**
 	 * Stop all services.
+	 *
+	 * @return
+	 *   flux that will publish the final state of all services
 	 */
-	void stopAll();
+	Flux<ServiceStatus> stopAll();
 
 	/**
 	 * Get information about a certain service.
@@ -64,23 +72,20 @@ public interface ServiceManager
 	 * @return
 	 * 	service info
 	 */
-	Optional<ServiceInfo> get(Class<? extends ManagedService> service);
+	Mono<ServiceStatus> get(Class<? extends ManagedService> service);
 
 	/**
-	 * Add a service listener, will from now on be notified of status changes
-	 * on all services. Adds a hard reference, disallowing the listener from
-	 * being garbage collected.
+	 * Get all of the current services and their status. Will not receive
+	 * updates.
 	 *
-	 * @param listener
+	 * @return
 	 */
-	void addListener(ServiceListener listener);
+	Flux<ServiceStatus> services();
 
 	/**
-	 * Remove a service listener, it will no longer be notified of changes
-	 * to services.
+	 * Get a flux that will receive updates to service statuses.
 	 *
-	 * @param listener
-	 * 		listener to remove
+	 * @return
 	 */
-	void removeListener(ServiceListener listener);
+	Flux<ServiceStatus> serviceStatus();
 }

@@ -5,8 +5,10 @@ import com.google.inject.Injector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import reactor.core.publisher.Flux;
 import se.l4.crayon.app.Application;
 import se.l4.crayon.services.ServiceManager;
+import se.l4.crayon.services.ServiceStatus;
 
 public class ApplicationImpl
 	implements Application
@@ -20,7 +22,10 @@ public class ApplicationImpl
 	{
 		this.injector = injector;
 		services = injector.getInstance(ServiceManager.class);
-		services.addListener(new ApplicationServiceListener());
+
+		// Subscribe to updates to service statuses
+		services.serviceStatus()
+			.subscribe(status -> logger.info(String.format("[ %-8s ] %s", status.getState(), status.getService())));
 	}
 
 	@Override
@@ -29,32 +34,17 @@ public class ApplicationImpl
 		return injector;
 	}
 
-	boolean startInitialServices()
-	{
-		if(services.iterator().hasNext())
-		{
-			// TODO: This way of figuring out if there are services is hacky at best
-
-			services.startAll();
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
 	@Override
-	public void startServices()
+	public Flux<ServiceStatus> startServices()
 	{
 		logger.info("Starting all services");
-		services.startAll();
+		return services.startAll();
 	}
 
 	@Override
-	public void stopServices()
+	public Flux<ServiceStatus> stopServices()
 	{
 		logger.info("Stopping all services");
-		services.stopAll();
+		return services.stopAll();
 	}
 }

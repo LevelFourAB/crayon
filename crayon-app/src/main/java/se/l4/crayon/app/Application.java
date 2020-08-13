@@ -2,8 +2,10 @@ package se.l4.crayon.app;
 
 import com.google.inject.Injector;
 
+import reactor.core.publisher.Flux;
 import se.l4.crayon.app.internal.ApplicationBuilder;
 import se.l4.crayon.module.CrayonModule;
+import se.l4.crayon.services.ServiceStatus;
 
 public interface Application
 {
@@ -16,13 +18,13 @@ public interface Application
 	 * Start all of the {@link se.l4.crayon.services.ManagedService services}
 	 * in the system.
 	 */
-	void startServices();
+	Flux<ServiceStatus> startServices();
 
 	/**
 	 * Stop all of the  {@link se.l4.crayon.services.ManagedService services}
 	 * in the system.
 	 */
-	void stopServices();
+	Flux<ServiceStatus> stopServices();
 
 	/**
 	 * Start setting up an {@link Application}.

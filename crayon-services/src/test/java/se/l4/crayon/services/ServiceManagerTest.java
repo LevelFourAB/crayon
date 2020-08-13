@@ -3,11 +3,11 @@ package se.l4.crayon.services;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import java.util.Collections;
-import java.util.Set;
-
+import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.set.ImmutableSet;
 import org.junit.jupiter.api.Test;
 
+import reactor.core.publisher.Mono;
 import se.l4.crayon.services.internal.ServiceManagerImpl;
 
 /**
@@ -24,9 +24,9 @@ public class ServiceManagerTest
 		ServiceManager manager = new ServiceManagerImpl();
 		manager.add(new ServiceA());
 
-		manager.startAll();
+		manager.startAll().blockLast();
 
-		assertThat(manager.get(ServiceA.class).get().getStatus(), is(ServiceStatus.RUNNING));
+		assertThat(manager.get(ServiceA.class).block().getState(), is(ServiceStatus.State.RUNNING));
 	}
 
 	@Test
@@ -38,15 +38,15 @@ public class ServiceManagerTest
 		manager.add(new ServiceA());
 		manager.add(new ServiceB());
 
-		manager.start(ServiceB.class);
+		manager.start(ServiceB.class).block();
 
-		assertThat(manager.get(ServiceA.class).get().getStatus(), is(ServiceStatus.RUNNING));
-		assertThat(manager.get(ServiceB.class).get().getStatus(), is(ServiceStatus.RUNNING));
+		assertThat(manager.get(ServiceA.class).block().getState(), is(ServiceStatus.State.RUNNING));
+		assertThat(manager.get(ServiceB.class).block().getState(), is(ServiceStatus.State.RUNNING));
 
-		manager.stop(ServiceA.class);
+		manager.stop(ServiceA.class).block();
 
-		assertThat(manager.get(ServiceA.class).get().getStatus(), is(ServiceStatus.STOPPED));
-		assertThat(manager.get(ServiceB.class).get().getStatus(), is(ServiceStatus.STOPPED));
+		assertThat(manager.get(ServiceA.class).block().getState(), is(ServiceStatus.State.STOPPED));
+		assertThat(manager.get(ServiceB.class).block().getState(), is(ServiceStatus.State.STOPPED));
 	}
 
 	private static class ServiceA
@@ -54,13 +54,9 @@ public class ServiceManagerTest
 	{
 
 		@Override
-		public void start(ServiceEncounter encounter)
+		public Mono<RunningService> start()
 		{
-		}
-
-		@Override
-		public void stop()
-		{
+			return Mono.just(RunningService.stoppable(() -> {}));
 		}
 	}
 
@@ -69,19 +65,15 @@ public class ServiceManagerTest
 	{
 
 		@Override
-		public void start(ServiceEncounter encounter)
+		public Mono<RunningService> start()
 		{
+			return Mono.just(RunningService.stoppable(() -> {}));
 		}
 
 		@Override
-		public void stop()
+		public ImmutableSet<Class<? extends ManagedService>> getDependencies()
 		{
-		}
-
-		@Override
-		public Set<Class<? extends ManagedService>> getDependencies()
-		{
-			return Collections.singleton(ServiceA.class);
+			return Sets.immutable.of(ServiceA.class);
 		}
 	}
 }
