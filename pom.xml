@@ -33,6 +33,10 @@
 		<module>crayon-types</module>
 		<module>crayon-validation</module>
 		<module>crayon-vibe</module>
+
+		<module>crayon-http/crayon-http-servlet</module>
+
+		<module>crayon-http/crayon-http-server-undertow</module>
 	</modules>
 
 	<!-- License -->
