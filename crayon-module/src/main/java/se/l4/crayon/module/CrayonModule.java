@@ -15,6 +15,8 @@ import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.google.inject.binder.AnnotatedConstantBindingBuilder;
 import com.google.inject.binder.LinkedBindingBuilder;
 import com.google.inject.matcher.Matcher;
+import com.google.inject.multibindings.Multibinder;
+import com.google.inject.name.Names;
 import com.google.inject.spi.Message;
 import com.google.inject.spi.ProvisionListener;
 import com.google.inject.spi.TypeConverter;
@@ -35,6 +37,8 @@ public abstract class CrayonModule
 	private ContributionsBinder contributions;
 	private ConfigBinder configBinder;
 
+	private Multibinder<String> packageMultibinder;
+
 	@Override
 	public final synchronized void configure(Binder builder)
 	{
@@ -51,6 +55,8 @@ public abstract class CrayonModule
 		{
 			binder = null;
 			contributions = null;
+			packageMultibinder = null;
+			configBinder = null;
 		}
 	}
 
@@ -136,6 +142,30 @@ public abstract class CrayonModule
 		}
 
 		return configBinder;
+	}
+
+	/**
+	 * Activate auto-discovery of types that are in the package or sub-packages
+	 * of this module.
+	 */
+	protected void autoDiscover()
+	{
+		autoDiscover(getClass().getPackageName());
+	}
+
+	/**
+	 * Activate auto-discovery for the given package.
+	 *
+	 * @param pkg
+	 */
+	protected void autoDiscover(String pkg)
+	{
+		if(packageMultibinder == null)
+		{
+			packageMultibinder = Multibinder.newSetBinder(binder, String.class, Names.named("crayon-type-discovery"));
+		}
+
+		packageMultibinder.addBinding().toInstance(pkg);
 	}
 
 	/**
